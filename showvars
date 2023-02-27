@@ -56,7 +56,7 @@ disp_bbvars ${RUN_DO_FILE}
 [[ $? -ne 0 ]] && {
 	echo "
 >>> Retrying via other approach...
-^^^ !NOTE! the run.do_<foo> file can be any available one with the required info (not just this recipe's) ^^^
+^^^ !NOTE! this usually necessitates that the 'buildhistory' feature is turned on ^^^
 "
 	TRY=2
 	NEW_RUN_DO_FILE=$(find ${WORKDIR} -type f 2>/dev/null |xargs grep -H "^export" 2>/dev/null |head -n1 |cut -d: -f1)
