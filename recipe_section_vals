@@ -11,7 +11,8 @@
 # ref: http://redsymbol.net/articles/unofficial-bash-strict-mode/ 
 set -euo pipefail
 
-INFILE=raw_section_names.txt
+PFX=$(dirname "$(which "$0")")    # dir in which the common code and tools reside
+INFILE=${PFX}/raw_section_names.txt
 TMPF=.raw.txt
 ORIG_IFS=${IFS}
 export IFS=$'\n'

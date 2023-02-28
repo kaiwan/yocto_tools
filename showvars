@@ -45,6 +45,7 @@ bbexample:                      ### <--- the recipe name here's 'bbexample'  ###
 }
 RECIPE="$1"
 
+echo "${name}: scanning ..."
 WORKDIR=$(bitbake -e ${RECIPE} 2>/dev/null |grep -w "^WORKDIR" | awk -F'=' '{print $2}' |cut -d"\"" -f2) || true
 [ -z "${WORKDIR}" ] && failit "Couldn't get WORKDIR for recipe \"${RECIPE}\""
 
