@@ -38,7 +38,7 @@ source oe-init-build-env [build-dir]
 
 Perhaps you have a fully setup Yocto workspace but are running this script from another directory;
 in this case, simply switch to your Yocto workspace and run it from there, f.e., like this:
-~/L4_emblinux_trg/yocto/yocto_tools/${name} [-d] meta-<layername> <recipe-name>"
+~/yocto_tools/${name} [...params...]"
   exit 1
 }
 [[ ! -d ${BUILDDIR} ]] && failit "The default 'yocto' build directory specified
