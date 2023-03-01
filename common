@@ -62,7 +62,8 @@ set -u
 # How? cat tmp/deploy/images/qemuarm64/core-image-base-qemuarm64.testdata.json | jq --raw-output '.<var>'
 # So first gather the vars for machine, image name..
 local MACH=$(\ls -1t ${BUILDDIR}/tmp/deploy/images/ |head -n1)  # ASSUME it's the latest one (if not the only)
-[[ -z "${MACH}" ]] && failit "couldn't get value of machine var"
+[[ -z "${MACH}" ]] && failit "couldn't get value of machine var
+(Note: this can happen if you're running this script before building the system at least once)"
 if [[ -d ${BUILDDIR}/buildhistory ]] ; then
    local IMAGE_NAME=$(ls -1 buildhistory/images/${MACH}/glibc/)
    [[ -z "${IMAGE_NAME}" ]] && failit "couldn't get value of IMAGE_NAME var"
