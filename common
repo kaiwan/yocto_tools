@@ -78,7 +78,7 @@ MACHINE4BH=$(echo "${MACHINE}" |sed -e 's/-/_/')  # BH = BuildHistory
 (Note: this can happen if you're running this script before building the system at least once)"
 if [[ -d ${BUILDDIR}/buildhistory ]] ; then
 	TCLIBC=$(\ls -1t ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/|head -n1) # toolchain libc (glibc / musl / ...)
-   IMAGE_BASENAME=$(ls -1 buildhistory/images/${MACHINE4BH}/${TCLIBC}/)
+   IMAGE_BASENAME=$(ls -1t buildhistory/images/${MACHINE4BH}/${TCLIBC}/ |head -n1)
    [[ -z "${IMAGE_BASENAME}" ]] && failit "couldn't get value of IMAGE_BASENAME var"
 else
 	failit "require 'buildhistory' turned on (to get reqd vars)
@@ -86,7 +86,7 @@ To do so, insert this line into your conf/local.conf:
 INHERIT += \"buildhistory\""
 fi
 
-export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/tmp/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}-*.testdata.json)
+export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/tmp/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}-*.testdata.json |head -n1)
 [[ ! -f "${TESTDATA_JSON}" ]] && failit "couldn't get the JSON testdata file"
 #ls -l ${TESTDATA_JSON}
 
