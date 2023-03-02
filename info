@@ -1,0 +1,125 @@
+#!/bin/bash
+# Part of the 'yocto_tools' GitHub repo
+# 'A small, simple and useful tool collection for Yocto'
+#  https://github.com/kaiwan/yocto_tools
+# (c) Kaiwan NB, kaiwanTECH
+# License: MIT
+
+# info
+# Displays various useful info about the current Yocto workspace/build
+# (see the help screen)
+name=$(basename $0)
+PFX=$(dirname "$(which "$0")")    # dir in which the common code and tools reside
+source "${PFX}"/common || {
+  echo "${name}: could not source 'common' script, aborting..." ; exit 1
+}
+setup_env #-q
+SEP="-----------------------------------------------------------------------"
+TMPF=.t$$
+
+pkg_info()
+{
+echo "
+Total number of packages: $(oe-pkgdata-util list-pkgs|wc -l)"
+
+echo "Package size (top 10):"
+PKGSIZE_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/installed-package-sizes.txt
+head ${PKGSIZE_FILE}
+
+TOTAL_PKGSZ=$(awk -f ${PFX}/pkgsz.awk ${PKGSIZE_FILE})
+echo "Total size, all packages (KB): ${TOTAL_PKGSZ}"
+}
+
+LAYER_L1="+--------------------------- "
+LAYER_L2=" --------------------------+"
+LAYER_L3="+-----------------------------------------------------+"
+
+recipes4layer()
+{
+[[ $# -ne 1 ]] && return
+set +u
+local layerdir=$1
+set -u
+local RECIPE_CHAR='>'
+[[ ${SHOW_EXTENDED_LAYERREC_INFO} -ne 1 ]] && RECIPE_CHAR=' '
+echo "${LAYER_L1}${layerdir}"
+local recipedir recdir
+
+for recipedir in $(find ${layerdir} -type d -name "recipes-*" 2>/dev/null)
+do
+	echo "${RECIPE_CHAR}       $(basename ${recipedir})"
+	[[ ${SHOW_EXTENDED_LAYERREC_INFO} -ne 1 ]] && continue
+	local i=0
+	for recdir in $(find ${recipedir} -type d 2>/dev/null)
+	do
+			#echo ">>>>>>>>> ${recdir}"
+		[[ $i -eq 0 ]] && {
+			let i=i+1
+			continue
+		}
+		[[ "$(basename ${recdir})" = "files" ]] && continue
+		echo "            $(basename ${recdir})"
+	done
+done
+}
+
+layers_and_recipes()
+{
+bitbake-layers show-layers |grep "^meta-" > ${TMPF}
+ORIG_IFS=${IFS}
+echo
+echo "================= LAYERS and Recipes within them ================="
+export IFS=$'\n'
+for rec in $(cat ${TMPF})
+do
+	layerdir=$(echo "${rec}" |awk '{print $2}')
+	recipes4layer ${layerdir}
+done
+IFS=${ORIG_IFS}
+echo "${LAYER_L3}"
+rm -f ${TMPF}
+}
+
+usage()
+{
+cat <<@EOF@
+Usage: ${name} [option] ; where option can be:
+ -l   : show all _l_ayers and their recipes
+   -x : e_x_tended format: show names of all recipes under each layer/recipe
+        Only works if passed in addition to -l, i.e., run as:
+          ${name} -lx
+ -h   : show this help screen
+
+In any case, this utility will display:
+- minimal info on this system (BUILDDIR, MACHINE, IMAGE_BASENAME, ...)
+- some DISTRO details
+- package info (# of pkg, total size taken up)
+@EOF@
+}
+
+
+#--- 'main'
+set +u
+[[ "$1" = "-h" ]] && {
+	usage
+	exit 0
+}
+set -u
+SHOW_LAYERREC_INFO=0
+SHOW_EXTENDED_LAYERREC_INFO=0
+
+[[ $# -ge 1 ]] && {
+	[[ "$1" = "-l" ]] && SHOW_LAYERREC_INFO=1
+	[[ $# -eq 2 && "$2" = "-x" ]] && SHOW_EXTENDED_LAYERREC_INFO=1
+	[[ $# -eq 1 && "$1" = "-lx" ]] && {
+		SHOW_LAYERREC_INFO=1
+		SHOW_EXTENDED_LAYERREC_INFO=1
+	}
+}
+
+${PFX}/showvars2 | grep DISTRO
+pkg_info
+
+#recipes4layer meta-myapps
+[[ ${SHOW_LAYERREC_INFO} -eq 1 ]] && layers_and_recipes
+exit 0
