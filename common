@@ -52,7 +52,7 @@ Pl setup your Yocto workspace first (i.e.
 "
 
 set -u
-[ ! -f conf/local.conf ] && {
+[[ ! -f conf/local.conf ]] && {
   echo "${name}: we expect you to have sourced the oe-init-build-env and be in the Yocto build dir"
   exit 1
 }
@@ -61,8 +61,15 @@ set -u
 # Better way - get vars from the JSON testdata file!
 # How? cat tmp/deploy/images/qemuarm64/core-image-base-qemuarm64.testdata.json | jq --raw-output '.<var>'
 # So first gather the vars for machine, image name..
-local MACH=$(\ls -1t ${BUILDDIR}/tmp/deploy/images/ |head -n1)  # ASSUME it's the latest one (if not the only)
-[[ -z "${MACH}" ]] && failit "couldn't get value of machine var
+local MACHINE=$(\ls -1t ${BUILDDIR}/tmp/deploy/images/ |head -n1)  # ASSUME it's the latest one (if not the only)
+
+# An inconsistency: in the 'buildhistory' dir, if the MACH name has an '-', it's substituted
+# with '_' in the directory here: ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/ 
+# But this is NOT the case in other dirs (like tmp/deploy/...); crazy!
+local MACHINE4BH=$(echo "${MACHINE}" |sed -e 's/-/_/')  # BH = BuildHistory
+#echo "MACHINE4BH=${MACHINE4BH}"
+
+[[ -z "${MACHINE4BH}" ]] && failit "couldn't get value of machine var
 (Note: this can happen if you're running this script before building the system at least once)"
 if [[ -d ${BUILDDIR}/buildhistory ]] ; then
    local IMAGE_NAME=$(ls -1 buildhistory/images/${MACH}/glibc/)
