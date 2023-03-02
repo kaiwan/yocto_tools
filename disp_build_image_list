@@ -1,4 +1,9 @@
 #!/bin/bash
+# Part of the 'yocto_tools' GitHub repo
+# 'A small, simple and useful tool collection for Yocto'
+#  https://github.com/kaiwan/yocto_tools
+# (c) Kaiwan NB, kaiwanTECH
+# License: MIT
 export name=$(basename "$0")
 PFX=$(dirname "$(which "$0")")    # dir in which the common code and tools reside
 source "${PFX}"/common || {

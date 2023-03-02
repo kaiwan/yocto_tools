@@ -1,7 +1,12 @@
 #!/bin/bash
+# Part of the 'yocto_tools' GitHub repo
+# 'A small, simple and useful tool collection for Yocto'
+#  https://github.com/kaiwan/yocto_tools
+# (c) Kaiwan NB, kaiwanTECH
+# License: MIT
+
 # host_setup
 # Setup an (Ubuntu) Linux host for Yocto Project (YP)
-# (c) 2019 kaiwanTECH
 # ref: https://www.yoctoproject.org/docs/latest/brief-yoctoprojectqs/brief-yoctoprojectqs.html
 name=$(basename "$0")
 

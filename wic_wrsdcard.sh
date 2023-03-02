@@ -1,12 +1,13 @@
 #!/bin/bash
+# Part of the 'yocto_tools' GitHub repo
+# 'A small, simple and useful tool collection for Yocto'
+#  https://github.com/kaiwan/yocto_tools
+# (c) Kaiwan NB, kaiwanTECH
+# License: MIT
+
 # wic_wrsdcard.sh
 # Generate and dd wic image for the BBB - BeagleBone Black ! - onto an uSD card
 name=$(basename $0)
-# Turn on unofficial Bash 'strict mode'! V useful
-# "Convert many kinds of hidden, intermittent, or subtle bugs into immediate, glaringly obvious errors"
-# ref: http://redsymbol.net/articles/unofficial-bash-strict-mode/ 
-set -euo pipefail
-
 PFX=$(dirname "$(which "$0")")    # dir in which the common code and tools reside
 source "${PFX}"/common || {
   echo "${name}: could not source 'common' script, aborting..." ; exit 1

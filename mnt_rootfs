@@ -1,9 +1,9 @@
 #!/bin/bash
-# Turn on unofficial Bash 'strict mode'! V useful
-# "Convert many kinds of hidden, intermittent, or subtle bugs into immediate, glaringly obvious errors"
-# ref: http://redsymbol.net/articles/unofficial-bash-strict-mode/ 
-set -euo pipefail
-
+# Part of the 'yocto_tools' GitHub repo
+# 'A small, simple and useful tool collection for Yocto'
+#  https://github.com/kaiwan/yocto_tools
+# (c) Kaiwan NB, kaiwanTECH
+# License: MIT
 export name=$(basename "$0")
 MNT=/mnt/yocto_rootfs
 if mount|grep ${MNT} ; then

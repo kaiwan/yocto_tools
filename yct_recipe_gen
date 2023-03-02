@@ -1,8 +1,13 @@
 #!/bin/bash
+# Part of the 'yocto_tools' GitHub repo
+# 'A small, simple and useful tool collection for Yocto'
+#  https://github.com/kaiwan/yocto_tools
+# (c) Kaiwan NB, kaiwanTECH
+# License: MIT
+
 # yct_recipe_gen
 # A very simple Yocto recipe generator script.
 # (c) Kaiwan N Billimoria, kaiwanTECH
-# License: dual MIT | Apache
 #
 #----------------------------------------------------------------------
 # Example: if you run this script to create a meta layer named 'meta-myprj'

@@ -1,9 +1,14 @@
 #!/bin/bash
+# Part of the 'yocto_tools' GitHub repo
+# 'A small, simple and useful tool collection for Yocto'
+#  https://github.com/kaiwan/yocto_tools
+# (c) Kaiwan NB, kaiwanTECH
+# License: MIT
+
 # For my Yocto convenience scripts/tools
 # common - vars, routines, ...
 # We *expect* you to have sourced the oe-init-build-env and be in the Yocto build dir
 # It's checked in func setup_env(); so CALL it FIRST...
-# (c) kaiwanTECH
 
 # Turn on unofficial Bash 'strict mode'! V useful
 # "Convert many kinds of hidden, intermittent, or subtle bugs into immediate, glaringly obvious errors"

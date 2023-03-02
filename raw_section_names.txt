@@ -1,3 +1,10 @@
+# Part of the 'yocto_tools' GitHub repo
+# 'A small, simple and useful tool collection for Yocto'
+#  https://github.com/kaiwan/yocto_tools
+# (c) Kaiwan NB, kaiwanTECH
+# License: MIT
+
+# Used by the recipe_section_vals script.
 <?xml version="1.0" encoding="UTF-8"?>
 <section id="section_variable" xreflabel="SECTION variable">
   <title>SECTION variable: Package category</title>

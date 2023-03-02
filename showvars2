@@ -1,7 +1,10 @@
 #!/bin/bash
-# showvars2
+# Part of the 'yocto_tools' GitHub repo
+# 'A small, simple and useful tool collection for Yocto'
+#  https://github.com/kaiwan/yocto_tools
 # (c) Kaiwan NB, kaiwanTECH
 # License: MIT
+# showvars2
 name=$(basename $0)
 
 show_some_bb_vars()
