@@ -72,7 +72,8 @@ local MACHINE4BH=$(echo "${MACHINE}" |sed -e 's/-/_/')  # BH = BuildHistory
 [[ -z "${MACHINE4BH}" ]] && failit "couldn't get value of machine var
 (Note: this can happen if you're running this script before building the system at least once)"
 if [[ -d ${BUILDDIR}/buildhistory ]] ; then
-   local IMAGE_NAME=$(ls -1 buildhistory/images/${MACH}/glibc/)
+	local TCLIBC=$(\ls -1t ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/|head -n1) # toolchain libc (glibc / musl / ...)
+   local IMAGE_NAME=$(ls -1 buildhistory/images/${MACHINE4BH}/${TCLIBC}/)
    [[ -z "${IMAGE_NAME}" ]] && failit "couldn't get value of IMAGE_NAME var"
 else
 	failit "require 'buildhistory' turned on (to get reqd vars)
@@ -80,7 +81,7 @@ To do so, insert this line into your conf/local.conf:
 INHERIT += \"buildhistory\""
 fi
 
-export TESTDATA_JSON=${BUILDDIR}/tmp/deploy/images/${MACH}/${IMAGE_NAME}-${MACH}.testdata.json
+export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/tmp/deploy/images/${MACHINE}/${IMAGE_NAME}-${MACHINE}-*.testdata.json)
 [[ ! -f "${TESTDATA_JSON}" ]] && failit "couldn't get the JSON testdata file"
 #ls -l ${TESTDATA_JSON}
 
@@ -91,7 +92,7 @@ if [[ $# -ge 1 && "$1" = "-q" ]] ; then
 else
   echo "[--- WRT your current Yocto workspace/build config:
 BUILDDIR = ${BUILDDIR}
-MACHINE  = ${MACH}
+MACHINE  = ${MACHINE}
 IMAGE    = ${IMAGE_NAME}
 TESTDATA_JSON file = ${TESTDATA_JSON}
 ---]"
@@ -179,7 +180,7 @@ QP()
 # CALLER's responsibility to check for NULL return
 pick_latest_file()
 {
-local IMG=$(ls -t -1 ${YOCTO_PFX}/${BUILDDIR}/tmp/deploy/images/${MACH}/${BUILD_IMAGE}-${MACH}*${1}* 2>/dev/null |head -n1)
+local IMG=$(ls -t -1 ${YOCTO_PFX}/${BUILDDIR}/tmp/deploy/images/${MACHINE}/${BUILD_IMAGE}-${MACHINE}*${1}* 2>/dev/null |head -n1)
 IMG=$(realpath "${IMG}" 2>/dev/null)
 echo "${IMG}"
 }
