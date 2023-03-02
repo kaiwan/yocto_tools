@@ -46,18 +46,15 @@ pkg_info()
 {
 echo "
 Total number of packages: $(oe-pkgdata-util list-pkgs|wc -l)"
-
 echo "Package size (top 10):"
 PKGSIZE_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/installed-package-sizes.txt
 head ${PKGSIZE_FILE}
-
 TOTAL_PKGSZ=$(awk -f ${PFX}/pkgsz.awk ${PKGSIZE_FILE})
 echo "Total size, all packages (KB): ${TOTAL_PKGSZ}"
 }
 
 LAYER_L1="+--------------------------- "
-LAYER_L2=" --------------------------+"
-LAYER_L3="+-----------------------------------------------------+"
+LAYER_L2="+-----------------------------------------------------+"
 
 recipes4layer()
 {
@@ -72,17 +69,20 @@ local recipedir recdir
 
 for recipedir in $(find ${layerdir} -type d -name "recipes-*" 2>/dev/null)
 do
+	# layer name
+	# TODO - show layer prio
 	echo "${RECIPE_CHAR}       $(basename ${recipedir})"
 	[[ ${SHOW_EXTENDED_LAYERREC_INFO} -ne 1 ]] && continue
 	local i=0
 	for recdir in $(find ${recipedir} -type d 2>/dev/null)
 	do
-			#echo ">>>>>>>>> ${recdir}"
+		#echo ">>>>>>>>> ${recdir}"
 		[[ $i -eq 0 ]] && {
 			let i=i+1
 			continue
 		}
 		[[ "$(basename ${recdir})" = "files" ]] && continue
+		# recipe name
 		echo "            $(basename ${recdir})"
 	done
 done
@@ -101,7 +101,7 @@ do
 	recipes4layer ${layerdir}
 done
 IFS=${ORIG_IFS}
-echo "${LAYER_L3}"
+echo "${LAYER_L2}"
 rm -f ${TMPF}
 }
 
