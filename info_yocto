@@ -5,7 +5,7 @@
 # (c) Kaiwan NB, kaiwanTECH
 # License: MIT
 
-# info
+# info_yocto
 # Displays various useful info about the current Yocto workspace/build
 # (see the help screen)
 name=$(basename $0)
