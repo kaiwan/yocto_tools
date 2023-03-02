@@ -11,12 +11,13 @@ source "${PFX}"/common || {
 }
 setup_env #-q
 
-IMAGE_BASENAME=$(${PFX}/showvars2 |grep "^IMAGE_BASENAME" |cut -d: -f2)
+IMAGE_BASENAME=$(${PFX}/showvars2 IMAGE_BASENAME |tail -n1 |cut -d: -f2)
 [[ -z "${IMAGE_BASENAME}" ]] && failit "couldn't fetch value of IMAGE_BASENAME"
+
 MACHINE=$(${PFX}/showvars2 MACHINE |grep "^MACHINE" |cut -d: -f2|tail -n1)
 [[ -z "${MACHINE}" ]] && failit "couldn't fetch value of MACHINE"
 
-IMAGE_MACH_DIR=$(\ls -1t -d tmp/deploy/licenses/${IMAGE_BASENAME}-${MACHINE}-* |head -n1)
+IMAGE_MACH_DIR=$(\ls -1t -d ${BUILDDIR}/tmp/deploy/licenses/${IMAGE_BASENAME}-${MACHINE}-* |head -n1)
 [[ -z "${IMAGE_MACH_DIR}" ]] && failit "couldn't fetch value of the image-mach dir"
 PKG_MANIFEST=${IMAGE_MACH_DIR}/package.manifest
 [ ! -f ${PKG_MANIFEST} ] && failit "Oops, the package manifest file \"${PKG_MANIFEST}\" isn't found"
