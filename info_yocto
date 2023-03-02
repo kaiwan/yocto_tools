@@ -9,6 +9,31 @@
 # Displays various useful info about the current Yocto workspace/build
 # (see the help screen)
 name=$(basename $0)
+usage()
+{
+cat <<@EOF@
+Usage: ${name} [option] ; where option can be:
+               [-l[x] | -h]
+ -l   : show all Layers and their recipes
+   -x : eXtended format: show names of all recipes under each layer/recipe
+        Only works if passed in addition to -l, i.e., run as:
+          ${name} -lx
+ -h   : show this Help screen
+
+In any case, this utility will display:
+- minimal info on this system (BUILDDIR, MACHINE, IMAGE_BASENAME, ...)
+- some DISTRO details
+- package info (# of pkg, total size taken up)
+@EOF@
+}
+
+set +u
+[[ "$1" = "-h" ]] && {
+	usage
+	exit 0
+}
+set -u
+
 PFX=$(dirname "$(which "$0")")    # dir in which the common code and tools reside
 source "${PFX}"/common || {
   echo "${name}: could not source 'common' script, aborting..." ; exit 1
@@ -80,31 +105,8 @@ echo "${LAYER_L3}"
 rm -f ${TMPF}
 }
 
-usage()
-{
-cat <<@EOF@
-Usage: ${name} [option] ; where option can be:
- -l   : show all _l_ayers and their recipes
-   -x : e_x_tended format: show names of all recipes under each layer/recipe
-        Only works if passed in addition to -l, i.e., run as:
-          ${name} -lx
- -h   : show this help screen
-
-In any case, this utility will display:
-- minimal info on this system (BUILDDIR, MACHINE, IMAGE_BASENAME, ...)
-- some DISTRO details
-- package info (# of pkg, total size taken up)
-@EOF@
-}
-
 
 #--- 'main'
-set +u
-[[ "$1" = "-h" ]] && {
-	usage
-	exit 0
-}
-set -u
 SHOW_LAYERREC_INFO=0
 SHOW_EXTENDED_LAYERREC_INFO=0
 
