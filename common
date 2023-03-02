@@ -61,27 +61,27 @@ set -u
 # Better way - get vars from the JSON testdata file!
 # How? cat tmp/deploy/images/qemuarm64/core-image-base-qemuarm64.testdata.json | jq --raw-output '.<var>'
 # So first gather the vars for machine, image name..
-local MACHINE=$(\ls -1t ${BUILDDIR}/tmp/deploy/images/ |head -n1)  # ASSUME it's the latest one (if not the only)
+MACHINE=$(\ls -1t ${BUILDDIR}/tmp/deploy/images/ |head -n1)  # ASSUME it's the latest one (if not the only)
 
 # An inconsistency: in the 'buildhistory' dir, if the MACH name has an '-', it's substituted
 # with '_' in the directory here: ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/ 
 # But this is NOT the case in other dirs (like tmp/deploy/...); crazy!
-local MACHINE4BH=$(echo "${MACHINE}" |sed -e 's/-/_/')  # BH = BuildHistory
+MACHINE4BH=$(echo "${MACHINE}" |sed -e 's/-/_/')  # BH = BuildHistory
 #echo "MACHINE4BH=${MACHINE4BH}"
 
 [[ -z "${MACHINE4BH}" ]] && failit "couldn't get value of machine var
 (Note: this can happen if you're running this script before building the system at least once)"
 if [[ -d ${BUILDDIR}/buildhistory ]] ; then
-	local TCLIBC=$(\ls -1t ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/|head -n1) # toolchain libc (glibc / musl / ...)
-   local IMAGE_NAME=$(ls -1 buildhistory/images/${MACHINE4BH}/${TCLIBC}/)
-   [[ -z "${IMAGE_NAME}" ]] && failit "couldn't get value of IMAGE_NAME var"
+	TCLIBC=$(\ls -1t ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/|head -n1) # toolchain libc (glibc / musl / ...)
+   IMAGE_BASENAME=$(ls -1 buildhistory/images/${MACHINE4BH}/${TCLIBC}/)
+   [[ -z "${IMAGE_BASENAME}" ]] && failit "couldn't get value of IMAGE_BASENAME var"
 else
 	failit "require 'buildhistory' turned on (to get reqd vars)
 To do so, insert this line into your conf/local.conf:
 INHERIT += \"buildhistory\""
 fi
 
-export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/tmp/deploy/images/${MACHINE}/${IMAGE_NAME}-${MACHINE}-*.testdata.json)
+export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/tmp/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}-*.testdata.json)
 [[ ! -f "${TESTDATA_JSON}" ]] && failit "couldn't get the JSON testdata file"
 #ls -l ${TESTDATA_JSON}
 
@@ -93,7 +93,7 @@ else
   echo "[--- WRT your current Yocto workspace/build config:
 BUILDDIR = ${BUILDDIR}
 MACHINE  = ${MACHINE}
-IMAGE    = ${IMAGE_NAME}
+IMAGE_BASENAME = ${IMAGE_BASENAME}
 TESTDATA_JSON file = ${TESTDATA_JSON}
 ---]"
 	set -e
