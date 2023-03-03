@@ -47,10 +47,13 @@ pkg_info()
 echo "
 Total number of packages: $(oe-pkgdata-util list-pkgs|wc -l)"
 echo "Package size (top 10):"
-PKGSIZE_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/installed-package-sizes.txt
+local PKGSIZE_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/installed-package-sizes.txt
 head ${PKGSIZE_FILE}
-TOTAL_PKGSZ=$(awk -f ${PFX}/pkgsz.awk ${PKGSIZE_FILE})
+local TOTAL_PKGSZ=$(awk -f ${PFX}/pkgsz.awk ${PKGSIZE_FILE})
 echo "Total size, all packages (KB): ${TOTAL_PKGSZ}"
+
+local NUM_FILES_INIMG=$(wc -l ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/files-in-image.txt|awk '{print $1}')
+echo "Number of files in the image: ${NUM_FILES_INIMG}"
 }
 
 LAYER_L1="+--------------------------- "
