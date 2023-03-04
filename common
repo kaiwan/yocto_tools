@@ -86,7 +86,8 @@ To do so, insert this line into your conf/local.conf:
 INHERIT += \"buildhistory\""
 fi
 
-export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/tmp/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}-*.testdata.json |head -n1)
+#export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/tmp/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}-*.testdata.json |head -n1)
+export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/tmp/deploy/images/${MACHINE}/*-${MACHINE}-*.testdata.json |head -n1)
 [[ ! -f "${TESTDATA_JSON}" ]] && failit "couldn't get the JSON testdata file"
 #ls -l ${TESTDATA_JSON}
 
