@@ -17,11 +17,6 @@ source "${PFX}"/common || {
 }
 setup_env #-q
 
-IMAGE_BASENAME=$(${PFX}/showvars2 |grep "^IMAGE_BASENAME" |cut -d: -f2)
-[[ -z "${IMAGE_BASENAME}" ]] && failit "couldn't fetch value of IMAGE_BASENAME"
-MACHINE=$(${PFX}/showvars2 MACHINE |grep "^MACHINE" |cut -d: -f2|tail -n1)
-[[ -z "${MACHINE}" ]] && failit "couldn't fetch value of MACHINE"
-
 EXT4_IMG=$(ls -1t tmp/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}.ext[34] |head -n1)
 [[ ! -f ${EXT4_IMG} ]] && failit "couldn't fetch ext[34] image file path"
 #echo "EXT4_IMG = $EXT4_IMG"

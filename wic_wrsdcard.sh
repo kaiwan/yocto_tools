@@ -87,11 +87,8 @@ which wic >/dev/null 2>&1 || {
   exit 1
 }
 setup_env #-q
+# common:setup_env() will have got reqd the bb vars values by now...
 
-IMAGE_BASENAME=$(${PFX}/showvars2 |grep "^IMAGE_BASENAME" |cut -d: -f2)
-[[ -z "${IMAGE_BASENAME}" ]] && failit "couldn't fetch value of IMAGE_BASENAME"
-MACHINE=$(${PFX}/showvars2 MACHINE |grep "^MACHINE" |cut -d: -f2|tail -n1)
-[[ -z "${MACHINE}" ]] && failit "couldn't fetch value of MACHINE"
  
 gen_wic_img ${MACHINE}
 imgfile=$(ls -t ${MACHINE}-*-mmcblk0.direct |col|head -n1)
