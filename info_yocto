@@ -70,28 +70,70 @@ echo -n "Total size actually installed packages (KiB):${PKGSIZE_KB}"
 LAYER_L1="+--------------------------- "
 LAYER_L2="+-----------------------------------------------------+"
 
+# Params:
+#  $1 : layer directory
+#  $2 : layer priority
 recipes4layer()
 {
-[[ $# -ne 1 ]] && return
+[[ $# -ne 2 ]] && {
+	echo "*WARN* $0:recipes4layer(): insufficient params"
+	return
+}
 set +u
-local layerdir=$1
+local layerdir=$1 layerprio=$2
 set -u
 local RECIPE_CHAR='>'
 [[ ${SHOW_EXTENDED_LAYERREC_INFO} -ne 1 ]] && RECIPE_CHAR=' '
-echo "${LAYER_L1}${layerdir}"
-local recipedir recdir
 
+#------- Begin to imitate the 'kas' YAML file layout style
+# Eg. (ref: https://low-level.wiki/yocto/yocto-kas.html)
+# ...
+# meta-openembedded:
+#   url: http://git.openembedded.org/meta-openembedded
+#   refspec: dunfell
+#   path: poky/meta-openembedded
+#   layers:
+#     meta-oe:
+#     meta-python:
+#
+# meta-raspberrypi:
+#   url: https://github.com/agherzan/meta-raspberrypi/
+#   path: poky/meta-raspberrypi
+#   refspec: dunfell
+# ...
+
+#echo "  layers:"
+#--- Align the layerprio [n] in a right-justified manner
+# Eg. ...
+# meta-helloworld:                           [10]
+#        recipes-helloworld
+# meta-autotools-helloworld:                 [6]
+# ...
+local layerdir_base=$(basename ${layerdir})
+local slen=${#layerdir_base}
+
+printf "    %s:" $(basename ${layerdir})
+local numspc=3
+[[ ${slen} -lt 42 ]] && numspc=$((42-slen))
+for i in $(seq 1 ${numspc})
+do
+	echo -n " "
+done
+printf "[%d]\n" ${layerprio}
+#printf "    %s:               [%d]\n" $(basename ${layerdir}) ${layerprio}
+#---
+
+local recipedir recdir
 for recipedir in $(find ${layerdir} -type d -name "recipes-*" 2>/dev/null)
 do
 	# layer name
-	# TODO - show layer prio
-	echo "${RECIPE_CHAR}       $(basename ${recipedir})"
+	echo "        $(basename ${recipedir})"
 	[[ ${SHOW_EXTENDED_LAYERREC_INFO} -ne 1 ]] && continue
 	local i=0
 	for recdir in $(find ${recipedir} -type d 2>/dev/null)
 	do
 		#echo ">>>>>>>>> ${recdir}"
-		[[ $i -eq 0 ]] && {
+		[[ $i -eq 0 ]] && { # skip the first one
 			let i=i+1
 			continue
 		}
@@ -102,17 +144,20 @@ do
 done
 }
 
+LAYER_RECIPE_TITLE="============ LAYERS (meta-foo) and RECIPES (recipes-bar) within them ============"
 layers_and_recipes()
 {
 bitbake-layers show-layers |grep "^meta-" > ${TMPF}
 ORIG_IFS=${IFS}
 echo
-echo "================= LAYERS and Recipes within them ================="
+echo "${LAYER_RECIPE_TITLE}"
+local layerdir layerprio
 export IFS=$'\n'
 for rec in $(cat ${TMPF})
 do
 	layerdir=$(echo "${rec}" |awk '{print $2}')
-	recipes4layer ${layerdir}
+	layerprio=$(echo "${rec}" |awk '{print $3}')
+	recipes4layer ${layerdir} ${layerprio}
 done
 IFS=${ORIG_IFS}
 echo "${LAYER_L2}"
@@ -133,9 +178,7 @@ SHOW_EXTENDED_LAYERREC_INFO=0
 	}
 }
 
-${PFX}/showvars2 | grep DISTRO
+${PFX}/showvars2 | grep "DISTRO"
 pkg_info
-
-#recipes4layer meta-myapps
 [[ ${SHOW_LAYERREC_INFO} -eq 1 ]] && layers_and_recipes
 exit 0
