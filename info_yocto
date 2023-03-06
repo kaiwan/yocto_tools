@@ -45,15 +45,26 @@ TMPF=.t$$
 pkg_info()
 {
 echo "
-Total number of packages: $(oe-pkgdata-util list-pkgs|wc -l)"
+Package stats::
+Total number of packages generated (some get installed): $(oe-pkgdata-util list-pkgs|wc -l)"
 echo "Package size (top 10):"
 local PKGSIZE_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/installed-package-sizes.txt
 head ${PKGSIZE_FILE}
-local TOTAL_PKGSZ=$(awk -f ${PFX}/pkgsz.awk ${PKGSIZE_FILE})
-echo "Total size, all packages (KB): ${TOTAL_PKGSZ}"
 
 local NUM_FILES_INIMG=$(wc -l ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/files-in-image.txt|awk '{print $1}')
-echo "Number of files in the image: ${NUM_FILES_INIMG}"
+echo "
+Rootfs stats::
+Total number of files in the image:${NUM_FILES_INIMG}"
+
+# The package size manifest (under buildhistory) can provide info
+# buildhistory/images/qemuarm64/musl/core-image-minimal/installed-package-sizes.txt
+echo "Total # of actually installed packages:$(wc -l ${PKGSIZE_FILE} |awk '{print $1}')"
+local PKGSIZE_KB=$(cat ${PKGSIZE_FILE} |awk 'BEGIN {t=0} {t+=$1} END {print t}')
+echo -n "Total size actually installed packages (KiB):${PKGSIZE_KB}"
+[[ ${PKGSIZE_KB} -gt 1024 ]] && {
+	local SZMB=$(bc <<< "scale=2; (${PKGSIZE_KB}/1024.0)")
+	echo " (${SZMB} MB)"
+} || echo
 }
 
 LAYER_L1="+--------------------------- "
