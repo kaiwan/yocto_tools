@@ -67,7 +67,7 @@ echo -n "Total size actually installed packages (KiB):${PKGSIZE_KB}"
 } || echo
 }
 
-LAYER_L1="+--------------------------- "
+#LAYER_L1="+--------------------------- "
 LAYER_L2="+-----------------------------------------------------+"
 
 # Params:
@@ -144,7 +144,7 @@ do
 done
 }
 
-LAYER_RECIPE_TITLE="============ LAYERS (meta-foo) and RECIPES (recipes-bar) within them ============"
+LAYER_RECIPE_TITLE="=== LAYERS (meta-foo) and RECIPES (recipes-bar) within them [layer-prio] ==="
 layers_and_recipes()
 {
 bitbake-layers show-layers |grep "^meta-" > ${TMPF}
@@ -178,7 +178,25 @@ SHOW_EXTENDED_LAYERREC_INFO=0
 	}
 }
 
+# Show some 'DISTRO*' bb variables
 ${PFX}/showvars2 | grep "DISTRO"
+# In addition, show distro version - is it Dunfell / Kirkstone / ... - etc...
+DISTRO_POKYCONF=${BUILDDIR}/../meta-poky/conf/distro/poky.conf
+[[ -f ${DISTRO_POKYCONF} ]] && {
+  grep --max-count=1 "^DISTRO_VERSION" ${DISTRO_POKYCONF}
+  grep --max-count=1 "^DISTRO_CODENAME" ${DISTRO_POKYCONF}
+}
+
+# Show some info on the build (release ver, build target, etc)
+BUILDID_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/build-id.txt
+[[ -f ${BUILDID_FILE} ]] && {
+	egrep "^BB_VERSION|^TARGET_SYS|^MACHINE" ${BUILDID_FILE}
+}
+[[ 0 -eq 1 ]] && { # takes a while!
+echo -n "Kernel ver: "
+bitbake -e virtual/kernel | grep "^PV"|cut -d'=' -f2|cut -d'"' -f2
+}
+
 pkg_info
 [[ ${SHOW_LAYERREC_INFO} -eq 1 ]] && layers_and_recipes
 exit 0
