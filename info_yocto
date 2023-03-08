@@ -46,7 +46,7 @@ pkg_info()
 {
 echo "
 Package stats::
-Total number of packages generated (some get installed): $(oe-pkgdata-util list-pkgs|wc -l)"
+Total number of packages generated (a subset get installed): $(oe-pkgdata-util list-pkgs|wc -l)"
 echo "Package size (top 10):"
 local PKGSIZE_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/installed-package-sizes.txt
 head ${PKGSIZE_FILE}
@@ -180,12 +180,18 @@ SHOW_EXTENDED_LAYERREC_INFO=0
 
 # Show some 'DISTRO*' bb variables
 ${PFX}/showvars2 | grep "DISTRO"
+
 # In addition, show distro version - is it Dunfell / Kirkstone / ... - etc...
 DISTRO_POKYCONF=${BUILDDIR}/../meta-poky/conf/distro/poky.conf
 [[ -f ${DISTRO_POKYCONF} ]] && {
   grep --max-count=1 "^DISTRO_VERSION" ${DISTRO_POKYCONF}
   grep --max-count=1 "^DISTRO_CODENAME" ${DISTRO_POKYCONF}
 }
+
+# Show the init manager (SysVinit or systemd)
+echo -n "INIT manager:"
+${PFX}/showvars2 |grep "^DISTRO_FEATURES.*sysvinit" >/dev/null && echo "sysvinit" || true
+${PFX}/showvars2 |grep "^DISTRO_FEATURES.*systemd" >/dev/null &&  echo "systemd" || true
 
 # Show some info on the build (release ver, build target, etc)
 BUILDID_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/build-id.txt
