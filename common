@@ -63,6 +63,8 @@ set -u
 }
 #export MACH=$(grep -w "^MACHINE" conf/local.conf |tail -n1|cut -d'=' -f2|cut -d'"' -f2)
 
+# export common bitbake vars
+
 # Better way - get vars from the JSON testdata file!
 # How? cat tmp/deploy/images/qemuarm64/core-image-base-qemuarm64.testdata.json | jq --raw-output '.<var>'
 # So first gather the vars for machine, image name..

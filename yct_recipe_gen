@@ -261,8 +261,8 @@ echo "
 Your current Yocto 'build' dir (\$BUILDDIR) is
 \"${BUILDDIR}\"
 
-This implies that the recipe dir tree and files will be created within this
-Yocto 'build' dir displayed above.
+This implies that the layer/recipe dir tree and files will be created within
+this Yocto 'build' dir displayed above.
 If this is fine, press [Enter] to continue, else press ^C to abort"
 read -r
 
