@@ -1,0 +1,20 @@
+#!/bin/bash
+# Part of the 'yocto_tools' GitHub repo
+# 'A small, simple and useful tool collection for Yocto'
+#  https://github.com/kaiwan/yocto_tools
+# (c) Kaiwan NB, kaiwanTECH
+# License: MIT
+
+name=$(basename $0)
+PFX=$(dirname "$(which "$0")")    # dir in which the common code and tools reside
+source "${PFX}"/common || {
+  echo "${name}: could not source 'common' script, aborting..." ; exit 1
+}
+setup_env -q
+
+# Displays all recipes present in the target image type (core-image-xxx).
+# This does NOT mean they're all baked into the final rootfs; no, that depends
+# on the layers included, the specific receipes within those layers, and
+# how exactly your local conf 'installs' recipes.
+bitbake-layers show-recipes |grep -i "^[a-z]*:$" |sed 's/.$//'
+exit 0
