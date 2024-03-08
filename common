@@ -30,6 +30,9 @@ die()
 	exit 1
 }
 
+MSG_CANHAPPEN_BF_BUILD="Note: this can happen if you're running this script before building the target image at least once"
+
+
 # Params:
 # $1 : [-q] : optional; if passed, run in quiet mode
 setup_env()
@@ -67,8 +70,22 @@ set -u
 
 # Better way - get vars from the JSON testdata file!
 # How? cat tmp/deploy/images/qemuarm64/core-image-base-qemuarm64.testdata.json | jq --raw-output '.<var>'
+
+# Even TMPDIR can be something other than 'tmp'!
+#echo "TMPDIR = $TMPDIR"
+
+### ASSUMPTIONS!
+# 1. The TMPDIR name starts with 'tmp'
+# 2. the latest-used tmp* dir is the one to delve into
+export TMPD=$(\ls -1t -d tmp* | head -n1)
+[[ -z "${TMPD}" ]] && die "couldn't get value of machine var
+${MSG_CANHAPPEN_BF_BUILD}"
+#echo "TMPD = ${TMPD}"
+#exit 0
+
 # So first gather the vars for machine, image name..
-export MACHINE=$(\ls -1t ${BUILDDIR}/tmp/deploy/images/ |head -n1)  # ASSUME it's the latest one (if not the only)
+# ASSUME it's the latest one (if not the only)
+export MACHINE=$(\ls -1t ${BUILDDIR}/${TMPD}/deploy/images/ |head -n1)
 
 # An inconsistency: in the 'buildhistory' dir, if the MACH name has an '-', it's substituted
 # with '_' in the directory here: ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/ 
@@ -77,7 +94,7 @@ export MACHINE4BH=$(echo "${MACHINE}" |sed -e 's/-/_/')  # BH = BuildHistory
 #echo "MACHINE4BH=${MACHINE4BH}"
 
 [[ -z "${MACHINE4BH}" ]] && die "couldn't get value of machine var
-(Note: this can happen if you're running this script before building the system at least once)"
+${MSG_CANHAPPEN_BF_BUILD}"
 if [[ -d ${BUILDDIR}/buildhistory ]] ; then
 	export TCLIBC=$(\ls -1t ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/|head -n1) # toolchain libc (glibc / musl / ...)
    export IMAGE_BASENAME=$(ls -1t buildhistory/images/${MACHINE4BH}/${TCLIBC}/ |head -n1)
@@ -88,8 +105,8 @@ To do so, insert this line into your conf/local.conf:
 INHERIT += \"buildhistory\""
 fi
 
-#export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/tmp/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}-*.testdata.json |head -n1)
-export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/tmp/deploy/images/${MACHINE}/*-${MACHINE}-*.testdata.json |head -n1)
+#export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}-*.testdata.json |head -n1)
+export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/*-${MACHINE}-*.testdata.json |head -n1)
 [[ ! -f "${TESTDATA_JSON}" ]] && die "couldn't get the JSON testdata file"
 #ls -l ${TESTDATA_JSON}
 
@@ -188,7 +205,7 @@ QP()
 # CALLER's responsibility to check for NULL return
 pick_latest_file()
 {
-local IMG=$(ls -t -1 ${YOCTO_PFX}/${BUILDDIR}/tmp/deploy/images/${MACHINE}/${BUILD_IMAGE}-${MACHINE}*${1}* 2>/dev/null |head -n1)
+local IMG=$(ls -t -1 ${YOCTO_PFX}/${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/${BUILD_IMAGE}-${MACHINE}*${1}* 2>/dev/null |head -n1)
 IMG=$(realpath "${IMG}" 2>/dev/null)
 echo "${IMG}"
 }
