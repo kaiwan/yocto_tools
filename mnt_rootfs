@@ -18,7 +18,7 @@ source "${PFX}"/common || {
 setup_env #-q
 
 EXT4_IMG=$(ls -1t tmp/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}.ext[34] |head -n1)
-[[ ! -f ${EXT4_IMG} ]] && failit "couldn't fetch ext[34] image file path"
+[[ ! -f ${EXT4_IMG} ]] && die "couldn't fetch ext[34] image file path"
 #echo "EXT4_IMG = $EXT4_IMG"
 EXT4_IMG=$(realpath ${EXT4_IMG})
 echo "Loop mounting this file
@@ -28,7 +28,7 @@ as the rootfs, on mount point ${MNT} ...
 
 sudo mkdir -p ${MNT} 2>/dev/null
 sudo umount ${MNT}/ 2>/dev/null || true
-sudo mount -o loop ${EXT4_IMG} ${MNT}/ || failit "loop mount failed" && true
+sudo mount -o loop ${EXT4_IMG} ${MNT}/ || die "loop mount failed" && true
 df -h |grep "${MNT}"
 echo "Mounted; *** DON'T forget to umount it when done !!! ***"
 exit 0

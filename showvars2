@@ -59,7 +59,7 @@ source "${PFX}"/common || {
 }
 setup_env #-q
 
-hash jq || failit "Package 'jq' not installed?"
+hash jq || die "Package 'jq' not installed?"
 show_some_bb_vars
 
 [[ $# -eq 0 ]] && exit 0

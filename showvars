@@ -51,7 +51,7 @@ RECIPE="$1"
 
 echo "${name}: scanning ..."
 WORKDIR=$(bitbake -e ${RECIPE} 2>/dev/null |grep -w "^WORKDIR" | awk -F'=' '{print $2}' |cut -d"\"" -f2) || true
-[ -z "${WORKDIR}" ] && failit "Couldn't get WORKDIR for recipe \"${RECIPE}\""
+[ -z "${WORKDIR}" ] && die "Couldn't get WORKDIR for recipe \"${RECIPE}\""
 
 # Find a run.do_<foo> file under WORKDIR/temp
 TRY=1

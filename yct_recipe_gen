@@ -238,7 +238,6 @@ ls -l "${recipe_file}"
 
 
 ### 'main'
-
 which yad >/dev/null || {
   echo "${name}: 'yad' (yet another dialog) util missing, pl install package and retry...
 (Yes, as of now at least, this script requires to be run in a GUI-only environment)"
@@ -248,11 +247,11 @@ setup_env #-q  # from the 'common' script
 # By now, BUILDDIR is confirmed as okay; so lets proceed...
 [[ 0 -eq 1 ]] && {
 BUILDDIR=$(${PFX}/showvars2 |grep "^BUILDDIR" |awk -F'=' '{print $2}')
-[[ -z "${BUILDDIR}" ]] && failit "couldn't fetch value of BUILDDIR"
+[[ -z "${BUILDDIR}" ]] && die "couldn't fetch value of BUILDDIR"
 IMAGE_BASENAME=$(${PFX}/showvars2 |grep "^IMAGE_BASENAME" |cut -d: -f2)
-[[ -z "${IMAGE_BASENAME}" ]] && failit "couldn't fetch value of IMAGE_BASENAME"
+[[ -z "${IMAGE_BASENAME}" ]] && die "couldn't fetch value of IMAGE_BASENAME"
 MACHINE=$(${PFX}/showvars2 MACHINE |grep "^MACHINE" |cut -d: -f2|tail -n1)
-[[ -z "${MACHINE}" ]] && failit "couldn't fetch value of MACHINE"
+[[ -z "${MACHINE}" ]] && die "couldn't fetch value of MACHINE"
 }
 
 export BUILDDIR

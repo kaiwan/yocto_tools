@@ -178,6 +178,7 @@ SHOW_EXTENDED_LAYERREC_INFO=0
 	}
 }
 
+[[ ! -f ${PFX}/showvars2 ]] && die "Couldn't locate the \"${PFX}/showvars2\" script; it should be there when the repo's cloned..."
 # Show some 'DISTRO*' bb variables
 ${PFX}/showvars2 | grep "DISTRO"
 

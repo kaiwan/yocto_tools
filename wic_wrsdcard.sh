@@ -92,7 +92,7 @@ setup_env #-q
  
 gen_wic_img ${MACHINE}
 imgfile=$(ls -t ${MACHINE}-*-mmcblk0.direct |col|head -n1)
-[[ -z "${imgfile}" ]] && failit "couldn't get machine image filename"
+[[ -z "${imgfile}" ]] && die "couldn't get machine image filename"
 write_wic_img "${imgfile}"
 # Get rid of the older wic images
 rm_older
