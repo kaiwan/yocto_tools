@@ -5,6 +5,10 @@
 # (c) Kaiwan NB, kaiwanTECH
 # License: MIT
 
+# To see all *packages* run
+#  oe-pkgdata-util
+# or, as a GUI, oe-pkgdata-browser
+
 name=$(basename $0)
 PFX=$(dirname "$(which "$0")")    # dir in which the common code and tools reside
 source "${PFX}"/common || {

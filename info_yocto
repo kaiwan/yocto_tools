@@ -44,9 +44,10 @@ TMPF=.t$$
 
 pkg_info()
 {
+local TOTAL_PKGS=$(oe-pkgdata-util list-pkgs 2>/dev/null|wc -l)
 echo "
 Package stats::
-Total number of packages generated (a subset get installed): $(oe-pkgdata-util list-pkgs|wc -l)"
+Total number of packages generated (a subset get installed): ${TOTAL_PKGS}"
 echo "Package size (top 10):"
 local PKGSIZE_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/installed-package-sizes.txt
 head ${PKGSIZE_FILE}
@@ -57,7 +58,7 @@ Rootfs stats::
 Total number of files in the image:${NUM_FILES_INIMG}"
 
 # The package size manifest (under buildhistory) can provide info
-# buildhistory/images/qemuarm64/musl/core-image-minimal/installed-package-sizes.txt
+# F.e.: buildhistory/images/qemuarm64/musl/core-image-minimal/installed-package-sizes.txt
 echo "Total # of actually installed packages:$(wc -l ${PKGSIZE_FILE} |awk '{print $1}')"
 local PKGSIZE_KB=$(cat ${PKGSIZE_FILE} |awk 'BEGIN {t=0} {t+=$1} END {print t}')
 echo -n "Total size actually installed packages (KiB):${PKGSIZE_KB}"
@@ -76,7 +77,7 @@ LAYER_L2="+-----------------------------------------------------+"
 recipes4layer()
 {
 [[ $# -ne 2 ]] && {
-	echo "*WARN* $0:recipes4layer(): insufficient params"
+	echo "*WARN* $0:recipes4layer(): insufficient params (need 2 received $#)"
 	return
 }
 set +u
@@ -182,6 +183,7 @@ SHOW_EXTENDED_LAYERREC_INFO=0
 # Show some 'DISTRO*' bb variables
 ${PFX}/showvars2 | grep "DISTRO"
 
+# ASSUMPTION : distro is 'poky'
 # In addition, show distro version - is it Dunfell / Kirkstone / ... - etc...
 DISTRO_POKYCONF=${BUILDDIR}/../meta-poky/conf/distro/poky.conf
 [[ -f ${DISTRO_POKYCONF} ]] && {
@@ -197,7 +199,7 @@ ${PFX}/showvars2 |grep "^DISTRO_FEATURES.*systemd" >/dev/null &&  echo "systemd"
 # Show some info on the build (release ver, build target, etc)
 BUILDID_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/build-id.txt
 [[ -f ${BUILDID_FILE} ]] && {
-	egrep "^BB_VERSION|^TARGET_SYS|^MACHINE" ${BUILDID_FILE}
+	grep -E "^BB_VERSION|^TARGET_SYS|^MACHINE" ${BUILDID_FILE}
 }
 [[ 0 -eq 1 ]] && { # takes a while!
 echo -n "Kernel ver: "

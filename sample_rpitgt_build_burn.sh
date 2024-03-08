@@ -6,7 +6,8 @@
 # - wic is being used to generate the final image files; hence, this
 #   assumes you have a wic kickstart file present (it's name is in the
 #   var SDIMG (without the .wks extension)).
-# - you've git cloned our yocto_tools repo (for the 'burn4rpi_sd.sh script)
+# - you've git cloned our yocto_tools repo into the ~/yocto_tools dir
+#   (for the 'burn4rpi_sd.sh script)
 #-------------
 # Please ENSURE you first update the SDIMG and IMG_BASE variables
 #-------------
@@ -17,7 +18,7 @@ IMG_BASE=core-image-base
 rm_old()
 {
 	local n=$(ls -1t ${SDIMG}-2023*.direct* |wc -l)
-	[[ $n -le 3 ]] && return
+	[[ $n -le 3 ]] && return 0
 	local numrm=$((n-3))
 	echo ">>> will now rm -f these older images: ([Enter] to continue, ^C to abort)"
 	ls -1t ${SDIMG}-2023*.direct* |tail -n${numrm}
@@ -30,6 +31,10 @@ rm_old()
 echo ">>>>>>>>> time bitbake ${IMG_BASE} || exit 1 <<<<<<<<<<<"
 time bitbake ${IMG_BASE} || exit 1
 echo ">>>>>>>>> wic create ./${SDIMG}.wks -e ${IMG_BASE} || exit 1 <<<<<<<<<<<"
+[[ ! -f ./${SDIMG}.wks ]] && {
+	echo "wic 'kickstart' file \"./${SDIMG}.wks\" not found, aborting..."
+	exit 1
+}
 wic create ./${SDIMG}.wks -e ${IMG_BASE} || exit 1
 rm_old || exit 1
 echo 'uSDcard ready?'
