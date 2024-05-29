@@ -106,8 +106,8 @@ INHERIT += \"buildhistory\""
 fi
 
 #export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}-*.testdata.json |head -n1)
-export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/*-${MACHINE}-*.testdata.json |head -n1)
-[[ ! -f "${TESTDATA_JSON}" ]] && die "couldn't get the JSON testdata file"
+export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/*-${MACHINE}*.testdata.json |head -n1)
+[[ ! -f "${TESTDATA_JSON}" ]] && die "couldn't get the JSON testdata file (requires that the system's built at least onceand that the build metadata's present under tmp/deploy/images/)"
 #ls -l ${TESTDATA_JSON}
 
 set +e
