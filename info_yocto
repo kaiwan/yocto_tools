@@ -29,15 +29,21 @@ In any case, this utility will display:
 
 pkg_info()
 {
+# RELOOK / FIXME : need packages specific to a given base image
 local TOTAL_PKGS=$(oe-pkgdata-util list-pkgs 2>/dev/null|wc -l)
 echo "
 Package stats::
 Total number of packages generated (a subset get installed): ${TOTAL_PKGS}"
-echo "Package size (top 10):"
-local PKGSIZE_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/installed-package-sizes.txt
-head ${PKGSIZE_FILE}
+local PKGSIZE_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/installed-package-sizes.txt
+#echo "PKGSIZE_FILE = ${PKGSIZE_FILE} ------------------------"
 
-local NUM_FILES_INIMG=$(wc -l ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/files-in-image.txt|awk '{print $1}')
+[[ 0 -eq 1 ]] && {
+echo "Package size (top 10):"
+local PKGSIZE_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/installed-package-sizes.txt
+head ${PKGSIZE_FILE}
+}
+
+local NUM_FILES_INIMG=$(wc -l ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/files-in-image.txt|awk '{print $1}')
 echo "
 Rootfs stats::
 Total number of files in the image:${NUM_FILES_INIMG}"
@@ -130,7 +136,7 @@ do
 done
 }
 
-LAYER_RECIPE_TITLE="=== LAYERS (meta-foo) and RECIPES (recipes-bar) within them [layer-prio] ==="
+LAYER_RECIPE_TITLE="=== LAYERS (meta-foo) and RECIPES (recipes-bar) within ${BUILDDIR} [layer-prio] ==="
 layers_and_recipes()
 {
 bitbake-layers show-layers |grep "^meta-" > ${TMPF}
@@ -194,25 +200,32 @@ DISTRO_POKYCONF=${BUILDDIR}/../meta-poky/conf/distro/poky.conf
   grep --max-count=1 "^DISTRO_CODENAME" ${DISTRO_POKYCONF}
 }
 
-# Show the init manager (SysVinit or systemd)
-echo -n "INIT manager:"
-INIT_SYSV=0
-INIT_SYSTD=0
-${PFX}/showvars2 |grep "^DISTRO_FEATURES.*sysvinit" >/dev/null && INIT_SYSV=1 #echo "sysvinit" || true
-${PFX}/showvars2 |grep "^DISTRO_FEATURES.*systemd" >/dev/null && INIT_SYSTD=1 #echo "systemd" || true
-# sysvinit's often on along with systemd; so if systemd's enabled, it's the one
-[[ ${INIT_SYSTD} -eq 1 ]] && echo "systemd" || echo "sysvinit"
+for IB in ${IMAGE_BASENAMES}
+do
+  echo "
+=== For IMAGE_BASENAME '${IB}' ==="
 
-# Show some info on the build (release ver, build target, etc)
-BUILDID_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IMAGE_BASENAME}/build-id.txt
-[[ -f ${BUILDID_FILE} ]] && {
+  # Show the init manager (SysVinit or systemd)
+  echo -n "INIT manager:"
+  INIT_SYSV=0
+  INIT_SYSTD=0
+  ${PFX}/showvars2 |grep "^DISTRO_FEATURES.*sysvinit" >/dev/null && INIT_SYSV=1
+  ${PFX}/showvars2 |grep "^DISTRO_FEATURES.*systemd" >/dev/null && INIT_SYSTD=1
+  # sysvinit's often on along with systemd; so if systemd's enabled, it's the one
+  [[ ${INIT_SYSTD} -eq 1 ]] && echo "systemd" || echo "sysvinit"
+
+  # Show some info on the build (release ver, build target, etc)
+  BUILDID_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/build-id.txt
+  [[ -f ${BUILDID_FILE} ]] && {
 	grep -E "^BB_VERSION|^TARGET_SYS|^MACHINE" ${BUILDID_FILE}
-}
-[[ 0 -eq 1 ]] && { # takes a while!
-echo -n "Kernel ver: "
-bitbake -e virtual/kernel | grep "^PV"|cut -d'=' -f2|cut -d'"' -f2
-}
+  }
+  [[ 0 -eq 1 ]] && { # takes a while!
+    echo -n "Kernel ver: "
+    bitbake -e virtual/kernel | grep "^PV"|cut -d'=' -f2|cut -d'"' -f2
+  }
 
-pkg_info
+  pkg_info
+done
+
 [[ ${SHOW_LAYERREC_INFO} -eq 1 ]] && layers_and_recipes
 exit 0

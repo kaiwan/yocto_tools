@@ -29,14 +29,29 @@ die()
 	echo >&2 "FATAL:$(basename $0) :: $*"
 	exit 1
 }
+warn()
+{
+	echo >&2 "WARNING:$(basename $0) :: $*"
+}
 
 MSG_CANHAPPEN_BF_BUILD="Note: this can happen if you're running this script before building the target image at least once"
 
+get_json_file()
+{
+  for f in $(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/${IB}-${MACHINE}*.testdata.json)
+  do
+    [[ -L $f ]] && {
+       export TESTDATA_JSON=$f
+       break
+    }
+  done
+}
 
 # Params:
 # $1 : [-q] : optional; if passed, run in quiet mode
 setup_env()
 {
+unalias ls 2>/dev/null || true
 set +u
 [ -z "${BUILDDIR}" ] && {
   echo "${name}: we expect you to be running this script from within your Yocto workspace.
@@ -95,37 +110,44 @@ export MACHINE4BH=$(echo "${MACHINE}" |sed -e 's/-/_/')  # BH = BuildHistory
 
 [[ -z "${MACHINE4BH}" ]] && die "couldn't get value of machine var
 ${MSG_CANHAPPEN_BF_BUILD}"
+
 if [[ -d ${BUILDDIR}/buildhistory ]] ; then
-	export TCLIBC=$(\ls -1t ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/|head -n1) # toolchain libc (glibc / musl / ...)
-   # NOTE / TODO : we merely pick up the first image basename, ignoring any
-   # others that may exist as well (typically core-image-XXX)
-   export IMAGE_BASENAME=$(ls -1t buildhistory/images/${MACHINE4BH}/${TCLIBC}/ |head -n1)
-   [[ -z "${IMAGE_BASENAME}" ]] && die "couldn't get value of IMAGE_BASENAME var"
+   export TCLIBC=$(\ls -1t ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/|head -n1) # toolchain libc (glibc / musl / ...)
+   # Iterate over all existing image basenames (core-image-xxx) and show info specific to each as reqd
+   export IMAGE_BASENAMES=$(ls -1t buildhistory/images/${MACHINE4BH}/${TCLIBC}/)  # |head -n1)
+   [[ -z "${IMAGE_BASENAMES}" ]] && die "couldn't get value of IMAGE_BASENAMES var"
 else
-	die "require 'buildhistory' turned on (to get reqd vars)
+	die "requires the 'buildhistory' feature turned on (to get reqd vars)
 To do so, insert this line into your conf/local.conf:
 INHERIT += \"buildhistory\""
 fi
 
-#export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}-*.testdata.json |head -n1)
-export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}*.testdata.json |head -n1)
-#export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/*-${MACHINE}*.testdata.json |head -n1)
-[[ ! -f "${TESTDATA_JSON}" ]] && die "couldn't get the JSON testdata file (requires that the system's built at least once and that the build metadata's present under tmp/deploy/images/)"
-#ls -l ${TESTDATA_JSON}
+for IB in ${IMAGE_BASENAMES}
+do
+  echo "
+=== For IMAGE_BASENAME '${IB}' ==="
 
-set +e
-if [[ $# -ge 1 && "$1" = "-q" ]] ; then
+  get_json_file # pathname written into the TESTDATA_JSON exported var
+  [[ ! -f "${TESTDATA_JSON}" ]] && {
+	warn "couldn't get the JSON testdata file for this base image (requires that the system's built at least once and that the build metadata's present under tmp/deploy/images/)"
+	#ls -l ${TESTDATA_JSON}
+	continue
+  }
+
+  set +e
+  if [[ $# -ge 1 && "$1" = "-q" ]] ; then
 	set -e
 	return
-else
-  echo "[--- WRT your current Yocto workspace/build config:
+  else
+	echo "[--- WRT your current Yocto workspace/build config with IMAGE_BASENAME '${IB}':
 BUILDDIR = ${BUILDDIR}
 MACHINE  = ${MACHINE}
-IMAGE_BASENAME = ${IMAGE_BASENAME}
 TESTDATA_JSON file = ${TESTDATA_JSON}
 ---]"
 	set -e
-fi
+  fi
+  #echo
+done
 }
 
 #-------------- r u n c m d -------------------------------------------
