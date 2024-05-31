@@ -97,6 +97,8 @@ export MACHINE4BH=$(echo "${MACHINE}" |sed -e 's/-/_/')  # BH = BuildHistory
 ${MSG_CANHAPPEN_BF_BUILD}"
 if [[ -d ${BUILDDIR}/buildhistory ]] ; then
 	export TCLIBC=$(\ls -1t ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/|head -n1) # toolchain libc (glibc / musl / ...)
+   # NOTE / TODO : we merely pick up the first image basename, ignoring any
+   # others that may exist as well (typically core-image-XXX)
    export IMAGE_BASENAME=$(ls -1t buildhistory/images/${MACHINE4BH}/${TCLIBC}/ |head -n1)
    [[ -z "${IMAGE_BASENAME}" ]] && die "couldn't get value of IMAGE_BASENAME var"
 else
@@ -106,8 +108,9 @@ INHERIT += \"buildhistory\""
 fi
 
 #export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}-*.testdata.json |head -n1)
-export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/*-${MACHINE}*.testdata.json |head -n1)
-[[ ! -f "${TESTDATA_JSON}" ]] && die "couldn't get the JSON testdata file (requires that the system's built at least onceand that the build metadata's present under tmp/deploy/images/)"
+export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}*.testdata.json |head -n1)
+#export TESTDATA_JSON=$(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/*-${MACHINE}*.testdata.json |head -n1)
+[[ ! -f "${TESTDATA_JSON}" ]] && die "couldn't get the JSON testdata file (requires that the system's built at least once and that the build metadata's present under tmp/deploy/images/)"
 #ls -l ${TESTDATA_JSON}
 
 set +e
