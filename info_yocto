@@ -27,21 +27,6 @@ In any case, this utility will display:
 @EOF@
 }
 
-set +u
-[[ "$1" = "-h" ]] && {
-	usage
-	exit 0
-}
-set -u
-
-PFX=$(dirname "$(which "$0")")    # dir in which the common code and tools reside
-source "${PFX}"/common || {
-  echo "${name}: could not source 'common' script, aborting..." ; exit 1
-}
-setup_env #-q
-SEP="-----------------------------------------------------------------------"
-TMPF=.t$$
-
 pkg_info()
 {
 local TOTAL_PKGS=$(oe-pkgdata-util list-pkgs 2>/dev/null|wc -l)
@@ -167,6 +152,20 @@ rm -f ${TMPF}
 
 
 #--- 'main'
+set +u
+[[ "$1" = "-h" ]] && {
+	usage
+	exit 0
+}
+set -u
+
+PFX=$(dirname "$(which "$0")")    # dir in which the common code and tools reside
+source "${PFX}"/common || {
+  echo "${name}: could not source 'common' script, aborting..." ; exit 1
+}
+SEP="-----------------------------------------------------------------------"
+TMPF=.t$$
+
 SHOW_LAYERREC_INFO=0
 SHOW_EXTENDED_LAYERREC_INFO=0
 
@@ -177,7 +176,11 @@ SHOW_EXTENDED_LAYERREC_INFO=0
 		SHOW_LAYERREC_INFO=1
 		SHOW_EXTENDED_LAYERREC_INFO=1
 	}
+	[[ "$1" != "-l" ]] && [[ "$1" != "-lx" ]] && 	[[ "$1" != "-h" ]] && {
+	   usage; exit 1
+	}
 }
+setup_env #-q
 
 [[ ! -f ${PFX}/showvars2 ]] && die "Couldn't locate the \"${PFX}/showvars2\" script; it should be there when the repo's cloned..."
 # Show some 'DISTRO*' bb variables
