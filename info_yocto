@@ -30,10 +30,8 @@ In any case, this utility will display:
 pkg_info()
 {
 # RELOOK / FIXME : need packages specific to a given base image
-local TOTAL_PKGS=$(oe-pkgdata-util list-pkgs 2>/dev/null|wc -l)
-echo "
-Package stats::
-Total number of packages generated (a subset get installed): ${TOTAL_PKGS}"
+#local TOTAL_PKGS=$(oe-pkgdata-util list-pkgs 2>/dev/null|wc -l)
+#echo "Total number of packages generated (a subset get installed): ${TOTAL_PKGS}"
 local PKGSIZE_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/installed-package-sizes.txt
 #echo "PKGSIZE_FILE = ${PKGSIZE_FILE} ------------------------"
 
@@ -44,15 +42,14 @@ head ${PKGSIZE_FILE}
 }
 
 local NUM_FILES_INIMG=$(wc -l ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/files-in-image.txt|awk '{print $1}')
-echo "
-Rootfs stats::
-Total number of files in the image:${NUM_FILES_INIMG}"
+echo "Target root filesystem stats:
+ Total number of files in the image:${NUM_FILES_INIMG}"
 
 # The package size manifest (under buildhistory) can provide info
 # F.e.: buildhistory/images/qemuarm64/musl/core-image-minimal/installed-package-sizes.txt
-echo "Total # of actually installed packages:$(wc -l ${PKGSIZE_FILE} |awk '{print $1}')"
+echo " Total # of actually installed packages:$(wc -l ${PKGSIZE_FILE} |awk '{print $1}')"
 local PKGSIZE_KB=$(cat ${PKGSIZE_FILE} |awk 'BEGIN {t=0} {t+=$1} END {print t}')
-echo -n "Total size actually installed packages (KiB):${PKGSIZE_KB}"
+echo -n " Total size actually installed packages:${PKGSIZE_KB} KB"
 [[ ${PKGSIZE_KB} -gt 1024 ]] && {
 	local SZMB=$(bc <<< "scale=2; (${PKGSIZE_KB}/1024.0)")
 	echo " (${SZMB} MB)"
@@ -188,6 +185,8 @@ SHOW_EXTENDED_LAYERREC_INFO=0
 }
 setup_env #-q
 
+echo "
+--- Common ---"
 [[ ! -f ${PFX}/showvars2 ]] && die "Couldn't locate the \"${PFX}/showvars2\" script; it should be there when the repo's cloned..."
 # Show some 'DISTRO*' bb variables
 ${PFX}/showvars2 | grep "DISTRO"
@@ -199,6 +198,8 @@ DISTRO_POKYCONF=${BUILDDIR}/../meta-poky/conf/distro/poky.conf
   grep --max-count=1 "^DISTRO_VERSION" ${DISTRO_POKYCONF}
   grep --max-count=1 "^DISTRO_CODENAME" ${DISTRO_POKYCONF}
 }
+TOTAL_PKGS=$(oe-pkgdata-util list-pkgs 2>/dev/null|wc -l)
+echo "Total number of packages generated (a subset get installed): ${TOTAL_PKGS}"
 
 for IB in ${IMAGE_BASENAMES}
 do
