@@ -65,7 +65,7 @@ LAYER_L2="+-----------------------------------------------------+"
 recipes4layer()
 {
 [[ $# -ne 2 ]] && {
-	echo "*WARN* $0:recipes4layer(): insufficient params (need 2 received $#)"
+	echo "*WARN* $0:recipes4layer(): wrong # of params (need 2 received $#)"
 	return
 }
 set +u
@@ -117,7 +117,7 @@ for recipedir in $(find ${layerdir} -type d -name "recipes-*" 2>/dev/null)
 do
 	# layer name
 	echo "        $(basename ${recipedir})"
-	[[ ${SHOW_EXTENDED_LAYERREC_INFO} -ne 1 ]] && continue
+	[[ ${SHOW_EXTENDED_LAYERREC_INFO} -ne 1 ]] && continue  # -x passed?
 	local i=0
 	for recdir in $(find ${recipedir} -type d 2>/dev/null)
 	do
@@ -136,21 +136,28 @@ done
 LAYER_RECIPE_TITLE="=== LAYERS (meta-foo) and RECIPES (recipes-bar) within ${BUILDDIR} [layer-prio] ==="
 layers_and_recipes()
 {
-bitbake-layers show-layers |grep "^meta-" > ${TMPF}
+bitbake-layers show-layers | grep "meta-" > ${TMPF}_bblyr
 ORIG_IFS=${IFS}
 echo
 echo "${LAYER_RECIPE_TITLE}"
+
+# First show the (default) meta/ dir's layers[+recipes]
+# FIXME: hard-coding prio as 5
+recipes4layer ${BUILDDIR}/../meta 5
+
 local layerdir layerprio
 export IFS=$'\n'
-for rec in $(cat ${TMPF})
+for rec in $(cat ${TMPF}_bblyr)
 do
-	layerdir=$(echo "${rec}" |awk '{print $2}')
-	layerprio=$(echo "${rec}" |awk '{print $3}')
+	layerdir=$(grep "${rec}" ${TMPF}_bblyr |awk '{print $2}') || true
+	layerprio=$(grep "${rec}" ${TMPF}_bblyr |awk '{print $3}') || true
+	#echo "rec=$rec, layerdir = $layerdir, layerprio=$layerprio"
+	[[ -z "${layerdir}" ]] && continue
 	recipes4layer ${layerdir} ${layerprio}
 done
 IFS=${ORIG_IFS}
-echo "${LAYER_L2}"
-rm -f ${TMPF}
+#echo "${LAYER_L2}"
+rm -f ${TMPF}_bblyr
 }
 
 
