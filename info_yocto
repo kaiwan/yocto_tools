@@ -14,10 +14,15 @@ usage()
 cat <<@EOF@
 Usage: ${name} [option] ; where option can be:
                [-l[x] | -h]
- -l   : show all Layers and their recipes
-   -x : eXtended format: show names of all recipes under each layer/recipe
+ -l   : show _all_ Layers and their recipes (includes all BB layers[+recipes])
+   -x : eXtended format: show names of all recipes under each layer
         Only works if passed in addition to -l, i.e., run as:
           ${name} -lx
+      Note that the layers[+recipes] shown does not necessarily imply they're
+      going to be built for a given image; that depends on your base image
+      package config, local.conf settings, etc.
+      (Just seeing all the (large # of) layers+recipes can give an idea
+      of the various installable projects/services/apps available!)
  -h   : show this Help screen
 
 In any case, this utility will display:
@@ -54,6 +59,9 @@ echo -n " Total size actually installed packages:${PKGSIZE_KB} KB"
 	local SZMB=$(bc <<< "scale=2; (${PKGSIZE_KB}/1024.0)")
 	echo " (${SZMB} MB)"
 } || echo
+echo "(Details on installed packages:
+ ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/
+  installed-package-info.txt  installed-package-names.txt  installed-package-sizes.txt  installed-packages.txt )"
 }
 
 #LAYER_L1="+--------------------------- "
