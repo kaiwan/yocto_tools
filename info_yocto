@@ -141,11 +141,16 @@ do
 done
 }
 
-LAYER_RECIPE_TITLE="=== LAYERS (meta-foo) and RECIPES (recipes-bar) within ${BUILDDIR} [layer-prio] ==="
 layers_and_recipes()
 {
 bitbake-layers show-layers | grep "meta-" > ${TMPF}_bblyr
 ORIG_IFS=${IFS}
+
+LAYER_RECIPE_TITLE_HEAD="=== All LAYERS (meta-foo) and RECIPES (recipe-bar)"
+LAYER_RECIPE_TITLE_TAIL="within $(dirname ${BUILDDIR}) (format: meta-<layer-name>:   [prio]) ==="
+[[ ${SHOW_EXTENDED_LAYERREC_INFO} -eq 1 ]] && \
+ LAYER_RECIPE_TITLE="${LAYER_RECIPE_TITLE_HEAD} and all individual RECIPES ${LAYER_RECIPE_TITLE_TAIL}" || \
+ LAYER_RECIPE_TITLE="${LAYER_RECIPE_TITLE_HEAD} ${LAYER_RECIPE_TITLE_TAIL}"
 echo
 echo "${LAYER_RECIPE_TITLE}"
 
