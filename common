@@ -38,6 +38,12 @@ MSG_CANHAPPEN_BF_BUILD="Note: this can happen if you're running this script befo
 
 get_json_file()
 {
+  
+  ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/${IB}-${MACHINE}*.testdata.json >/dev/null 2>&1 || {
+    printf "%-32s %50s\n" "[${IB}]" "[Couldn't get the testdata.json file, likely this image isn't built; skipping...]"
+    return 1
+  }
+
   for f in $(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/${IB}-${MACHINE}*.testdata.json)
   do
     [[ -L $f ]] && {
@@ -45,6 +51,7 @@ get_json_file()
        break
     }
   done
+  return 0
 }
 
 # Params:
@@ -75,6 +82,7 @@ Pl setup your Yocto workspace first (i.e.
 "
 
 set -u
+# RELOOK / FIXME !
 [[ ! -f conf/local.conf ]] && {
   echo "${name}: we expect you to have sourced the oe-init-build-env and be in the Yocto build dir"
   exit 1
@@ -86,8 +94,10 @@ set -u
 # Better way - get vars from the JSON testdata file!
 # How? cat tmp/deploy/images/qemuarm64/core-image-base-qemuarm64.testdata.json | jq --raw-output '.<var>'
 
+#set +e
 # Even TMPDIR can be something other than 'tmp'!
-#echo "TMPDIR = $TMPDIR"
+#echo "TMPDIR = ${TMPDIR}"
+#set -e
 
 ### ASSUMPTIONS!
 # 1. The TMPDIR name starts with 'tmp'
@@ -115,21 +125,23 @@ if [[ -d ${BUILDDIR}/buildhistory ]] ; then
    export TCLIBC=$(\ls -1t ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/|head -n1) # toolchain libc (glibc / musl / ...)
    # Iterate over all existing image basenames (core-image-xxx) and show info specific to each as reqd
    export IMAGE_BASENAMES=$(ls -1t buildhistory/images/${MACHINE4BH}/${TCLIBC}/)  # |head -n1)
-   [[ -z "${IMAGE_BASENAMES}" ]] && die "couldn't get value of IMAGE_BASENAMES var"
+   [[ -z "${IMAGE_BASENAMES}" ]] && die "couldn't get image basename(s)"
 else
 	die "requires the 'buildhistory' feature turned on (to get reqd vars)
 To do so, insert this line into your conf/local.conf:
 INHERIT += \"buildhistory\""
 fi
 
+export IB=""
+echo "BUILDDIR = ${BUILDDIR}
+MACHINE  = ${MACHINE}"
+
+printf "\n%-32s %50s\n" "IMAGE-BASENAME" "TESTDATA-JSON file"
 for IB in ${IMAGE_BASENAMES}
 do
-  echo "
-=== For IMAGE_BASENAME '${IB}' ==="
-
-  get_json_file # pathname written into the TESTDATA_JSON exported var
-  [[ ! -f "${TESTDATA_JSON}" ]] && {
-	warn "couldn't get the JSON testdata file for this base image (requires that the system's built at least once and that the build metadata's present under tmp/deploy/images/)"
+  # pathname written into the TESTDATA_JSON exported var
+  get_json_file || {
+	#warn "couldn't get the JSON testdata file for this base image (requires that the system's built at least once and that the build metadata's present under tmp/deploy/images/)"
 	#ls -l ${TESTDATA_JSON}
 	continue
   }
@@ -139,11 +151,7 @@ do
 	set -e
 	return
   else
-	echo "[--- WRT your current Yocto workspace/build config with IMAGE_BASENAME '${IB}':
-BUILDDIR = ${BUILDDIR}
-MACHINE  = ${MACHINE}
-TESTDATA_JSON file = ${TESTDATA_JSON}
----]"
+	printf "%-32s  %50s\n" ${IB} ${TESTDATA_JSON}
 	set -e
   fi
   #echo
