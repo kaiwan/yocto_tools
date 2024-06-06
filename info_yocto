@@ -32,9 +32,9 @@ In any case, this utility will display:
 @EOF@
 }
 
+# Package info specific to the image basename specified via ${IB} !
 pkg_info()
 {
-# RELOOK / FIXME : need packages specific to a given base image
 #local TOTAL_PKGS=$(oe-pkgdata-util list-pkgs 2>/dev/null|wc -l)
 #echo "Total number of packages generated (a subset get installed): ${TOTAL_PKGS}"
 local PKGSIZE_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/installed-package-sizes.txt
@@ -62,10 +62,9 @@ echo -n " Total size actually installed packages:${PKGSIZE_KB} KB"
 echo "(Details on installed packages:
  ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/
   installed-package-info.txt  installed-package-names.txt  installed-package-sizes.txt  installed-packages.txt )"
-}
 
-#LAYER_L1="+--------------------------- "
-LAYER_L2="+-----------------------------------------------------+"
+echo "Image last modified: $(stat --printf=%y ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/build-id.txt)"
+}
 
 # Params:
 #  $1 : layer directory
@@ -169,7 +168,6 @@ do
 	recipes4layer ${layerdir} ${layerprio}
 done
 IFS=${ORIG_IFS}
-#echo "${LAYER_L2}"
 rm -f ${TMPF}_bblyr
 }
 
@@ -205,41 +203,34 @@ SHOW_EXTENDED_LAYERREC_INFO=0
 }
 setup_env #-q
 
-echo "
---- Common ---"
-[[ ! -f ${PFX}/showvars2 ]] && die "Couldn't locate the \"${PFX}/showvars2\" script; it should be there when the repo's cloned..."
-# Show some 'DISTRO*' bb variables
-${PFX}/showvars2 | grep "DISTRO"
-
-# FIXME: ASSUMPTION : distro is 'poky'
-# In addition, show distro version - is it Dunfell / Kirkstone / ... - etc...
-DISTRO_POKYCONF=${BUILDDIR}/../meta-poky/conf/distro/poky.conf
-[[ -f ${DISTRO_POKYCONF} ]] && {
-  grep --max-count=1 "^DISTRO_VERSION" ${DISTRO_POKYCONF}
-  grep --max-count=1 "^DISTRO_CODENAME" ${DISTRO_POKYCONF}
-}
-TOTAL_PKGS=$(oe-pkgdata-util list-pkgs 2>/dev/null|wc -l)
-echo "Total number of packages generated (a subset get installed): ${TOTAL_PKGS}"
-
 for IB in ${IMAGE_BASENAMES}
 do
   echo "
-=== For IMAGE_BASENAME '${IB}' ==="
+=============== For IMAGE_BASENAME '${IB}' ==============="
+
+  # Show some info on the build (release ver, build target, etc)
+  BUILDID_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/build-id.txt
+  [[ -f ${BUILDID_FILE} ]] && {
+     grep -E "^BB_VERSION|^TARGET_SYS|^MACHINE" ${BUILDID_FILE}
+     echo
+  }
+
+  # Show some info on the build (release ver, build target, etc)
+  IMGINFO_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/image-info.txt
+  [[ -f ${IMGINFO_FILE} ]] && {
+    cat ${IMGINFO_FILE}
+    echo
+  }
 
   # Show the init manager (SysVinit or systemd)
   echo -n "INIT manager:"
   INIT_SYSV=0
   INIT_SYSTD=0
-  ${PFX}/showvars2 |grep "^DISTRO_FEATURES.*sysvinit" >/dev/null && INIT_SYSV=1
-  ${PFX}/showvars2 |grep "^DISTRO_FEATURES.*systemd" >/dev/null && INIT_SYSTD=1
+  grep "^sysvinit" ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/installed-package-info.txt >/dev/null && INIT_SYSV=1
+  grep "^systemd" ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/installed-package-info.txt >/dev/null && INIT_SYSTD=1
   # sysvinit's often on along with systemd; so if systemd's enabled, it's the one
   [[ ${INIT_SYSTD} -eq 1 ]] && echo "systemd" || echo "sysvinit"
 
-  # Show some info on the build (release ver, build target, etc)
-  BUILDID_FILE=${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/build-id.txt
-  [[ -f ${BUILDID_FILE} ]] && {
-	grep -E "^BB_VERSION|^TARGET_SYS|^MACHINE" ${BUILDID_FILE}
-  }
   [[ 0 -eq 1 ]] && { # takes a while!
     echo -n "Kernel ver: "
     bitbake -e virtual/kernel | grep "^PV"|cut -d'=' -f2|cut -d'"' -f2
