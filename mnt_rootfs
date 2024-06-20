@@ -5,8 +5,8 @@
 # (c) Kaiwan NB, kaiwanTECH
 # License: MIT
 export name=$(basename "$0")
-MNT=/mnt/yocto_rootfs
-if mount|grep ${MNT} ; then
+MOUNT_POINT=/mnt/yocto_rootfs
+if mount|grep ${MOUNT_POINT} ; then
 	echo "${name}: already mounted?"
 	exit 1
 fi
@@ -17,18 +17,18 @@ source "${PFX}"/common || {
 }
 setup_env #-q
 
-EXT4_IMG=$(ls -1t tmp/deploy/images/${MACHINE}/${IMAGE_BASENAME}-${MACHINE}.ext[34] |head -n1)
-[[ ! -f ${EXT4_IMG} ]] && die "couldn't fetch ext[34] image file path"
-#echo "EXT4_IMG = $EXT4_IMG"
-EXT4_IMG=$(realpath ${EXT4_IMG})
+# FIXME: select a given rootfs based on a image basename (as there can be several)
+EXT_IMG=$(ls -1t ${TMPD}/deploy/images/${MACHINE}/${IB}-${MACHINE}.*ext[34] |head -n1 || die "couldn't fetch any ext[34] format image file")
+#echo "EXT_IMG = $EXT_IMG"
+EXT_IMG=$(realpath ${EXT_IMG})
 echo "Loop mounting this file
-${EXT4_IMG}
-as the rootfs, on mount point ${MNT} ...
+${EXT_IMG}
+as the rootfs, on mount point ${MOUNT_POINT} ...
 "
 
-sudo mkdir -p ${MNT} 2>/dev/null
-sudo umount ${MNT}/ 2>/dev/null || true
-sudo mount -o loop ${EXT4_IMG} ${MNT}/ || die "loop mount failed" && true
-df -h |grep "${MNT}"
+sudo mkdir -p ${MOUNT_POINT} 2>/dev/null
+sudo umount ${MOUNT_POINT}/ 2>/dev/null || true
+sudo mount -o loop ${EXT_IMG} ${MOUNT_POINT}/ || die "loop mount failed" && true
+df -h |grep "${MOUNT_POINT}"
 echo "Mounted; *** DON'T forget to umount it when done !!! ***"
 exit 0
