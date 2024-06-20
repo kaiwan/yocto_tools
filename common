@@ -40,7 +40,7 @@ get_json_file()
 {
   
   ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/${IB}-${MACHINE}*.testdata.json >/dev/null 2>&1 || {
-    printf "%-32s %50s\n" "[${IB}]" "[Couldn't get the testdata.json file, likely this image isn't built; skipping...]"
+    printf "%-32s  %50s\n" "${IB}" "[Couldn't get the testdata.json file, likely this image isn't built; skipping...]"
     return 1
   }
 
@@ -87,30 +87,24 @@ set -u
   echo "${name}: we expect you to have sourced the oe-init-build-env and be in the Yocto build dir"
   exit 1
 }
-#export MACH=$(grep -w "^MACHINE" conf/local.conf |tail -n1|cut -d'=' -f2|cut -d'"' -f2)
-
 # export common bitbake vars
 
 # Better way - get vars from the JSON testdata file!
 # How? cat tmp/deploy/images/qemuarm64/core-image-base-qemuarm64.testdata.json | jq --raw-output '.<var>'
 
-#set +e
-# Even TMPDIR can be something other than 'tmp'!
-#echo "TMPDIR = ${TMPDIR}"
-#set -e
-
-### ASSUMPTIONS!
-# 1. The TMPDIR name starts with 'tmp'
-# 2. the latest-used tmp* dir is the one to delve into
-export TMPD=$(\ls -1t -d tmp* | head -n1)
-[[ -z "${TMPD}" ]] && die "couldn't get value of machine var
+export TMPD=$(basename $(realpath $(bitbake-getvar --value TMPDIR|tail -n1)))
+[[ -z "${TMPD}" ]] && die "couldn't get value of TMPDIR bb variable
 ${MSG_CANHAPPEN_BF_BUILD}"
 #echo "TMPD = ${TMPD}"
 #exit 0
 
 # So first gather the vars for machine, image name..
 # ASSUME it's the latest one (if not the only)
-export MACHINE=$(\ls -1t ${BUILDDIR}/${TMPD}/deploy/images/ |head -n1)
+export MACHINE=$(bitbake-getvar --value MACHINE|tail -n1)
+[[ -z "${MACHINE}" ]] && {
+  warn "couldn't get value of MACHINE bb variable, using fallback method"
+  export MACHINE=$(\ls -1t ${BUILDDIR}/${TMPD}/deploy/images/ |head -n1)
+}
 
 # An inconsistency: in the 'buildhistory' dir, if the MACH name has an '-', it's substituted
 # with '_' in the directory here: ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/ 
@@ -118,14 +112,18 @@ export MACHINE=$(\ls -1t ${BUILDDIR}/${TMPD}/deploy/images/ |head -n1)
 export MACHINE4BH=$(echo "${MACHINE}" |sed -e 's/-/_/')  # BH = BuildHistory
 #echo "MACHINE4BH=${MACHINE4BH}"
 
-[[ -z "${MACHINE4BH}" ]] && die "couldn't get value of machine var
+[[ -z "${MACHINE4BH}" ]] && die "couldn't get value of bitbake MACHINE variable
 ${MSG_CANHAPPEN_BF_BUILD}"
 
 if [[ -d ${BUILDDIR}/buildhistory ]] ; then
-   export TCLIBC=$(\ls -1t ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/|head -n1) # toolchain libc (glibc / musl / ...)
-   # Iterate over all existing image basenames (core-image-xxx) and show info specific to each as reqd
+   export TCLIBC=$(bitbake-getvar --value TCLIBC|tail -n1)
+   [[ -z "${TCLIBC}" ]] && {
+     warn "couldn't get value of TCLIBC bb variable, using fallback method"
+     export TCLIBC=$(\ls -1t ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/|head -n1) # toolchain libc (glibc / musl / ...)
+   }
+   # Iterate over all existing image basenames (core-image-xxx or whatever) and show info specific to each as reqd
    export IMAGE_BASENAMES=$(ls -1t buildhistory/images/${MACHINE4BH}/${TCLIBC}/)  # |head -n1)
-   [[ -z "${IMAGE_BASENAMES}" ]] && die "couldn't get image basename(s)"
+   [[ -z "${IMAGE_BASENAMES}" ]] && die "couldn't get any image basename(s)"
 else
 	die "requires the 'buildhistory' feature turned on (to get reqd vars)
 To do so, insert this line into your conf/local.conf:
