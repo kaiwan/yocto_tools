@@ -192,7 +192,7 @@ LIC_FILES_CHKSUM = "\\
 RDEPENDS:\${PN} = ""
 
 # Location of files
-#  Tip: append '; unpack=0 \' to not unpack the file
+#  Tip: append ';unpack=0 \' to not unpack the file
 SRC_URI = "${SRCURI_FILES}
    "
 
