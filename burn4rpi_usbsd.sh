@@ -12,8 +12,9 @@
 # ./burn4rpi_usbsd.sh /opt/yocto/poky/build_rpi/tmp/deploy/images/raspberrypi3-64/core-image-base-raspberrypi3-64.rpi-sdimg
 #
 name=$(basename $0)
+# TODO / RELOOK: don't hardcode ofdisk!
 ofdisk=sda
-interactive=0
+interactive=1  # let's just keep this ON for safety...
 
 [ $# -eq 0 ] && {
   echo "Usage: ${name} [-i] {path-to-rpi-sdimg-file}
@@ -38,15 +39,20 @@ fi
 echo "Image file (via realpath) is:"
 ls -lh ${IMG}
 
+echo "Enter output disk name (eg. sda, sdb, mmcblk0, ...):
+Tip: lookup the block device name via df or lsblk : "
+read ofdisk
+
 lsblk | grep -q "${ofdisk}" || {
   echo "${name}: lsblk failed to find output disk \"${ofdisk}\" ? Aborting..."
   exit 1
 }
 
-cmd="sudo umount /dev/${ofdisk}* 2>/dev/null; sync"
+OF_DEV=/dev/${ofdisk}
+cmd="sudo umount ${OF_DEV}* 2>/dev/null; sync"
 eval "${cmd}"
 
-cmd="time sudo dd if=${IMG} of=/dev/${ofdisk} bs=4k"
+cmd="time sudo dd if=${IMG} of=${OF_DEV} bs=4k"
 echo "
 ${cmd}
 "
