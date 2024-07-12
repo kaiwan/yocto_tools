@@ -10,19 +10,19 @@
 # (c) Kaiwan N Billimoria, kaiwanTECH
 #
 #----------------------------------------------------------------------
-# Example: if you run this script to create a meta layer named 'meta-myprj'
-# and, within it, a 'recipe' / package called 'test1' with, typically:
-#  ./yct_recipe_gen meta-myprj test1
+# Example: if you run this script to create a meta layer named 'meta-myinit'
+# and, within it, a 'recipe' / package called 'installfiles' with, typically:
+#  ./yct_recipe_gen meta-myinit installfiles
 # this is the dir structure it generates, along with the layer.conf, files
-# and test1.bb recipe files generated!
+# and the installfiles_0.1.bb recipe template files generated!
 #
-# meta-myprj/
-# ├── conf
-# │   └── layer.conf
-# └── recipes-myprj
-#     └── test1
+# meta-myinit/
+# └── recipes-myinit
+#     └── installfiles
 #         ├── files
-#         └── test1.bb
+#         │   ├── 0setup.bash
+#         │   └── debug_script
+#         └── installfiles_0.1.bb
 # 
 #----------------------------------------------------------------------
 name=$(basename "$0")
@@ -180,8 +180,8 @@ HOMEPAGE = ""
 # testing/development!
 #LICENSE = "CLOSED"
 #LIC_FILES_CHKSUM = ""
-# LICENSE set to 'Dual MIT/GPL'; change if you wish...
-LICENSE = "GPL-2.0 | MIT"
+# LICENSE set to 'MIT'; change if you wish...
+LICENSE = "MIT"
 LIC_FILES_CHKSUM = "\\
 	file://\${COREBASE}/meta/files/common-licenses/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302 \\
 	"
@@ -239,8 +239,8 @@ ls -l "${recipe_file}"
 
 ### 'main'
 which yad >/dev/null || {
-  echo "${name}: 'yad' (yet another dialog) util missing, pl install package and retry...
-(Yes, as of now at least, this script requires to be run in a GUI-only environment)"
+  echo "${name}: 'yad' (yet another dialog) util missing, pl install the 'yad' package and retry...
+(yes, as of now at least, this script requires to be run in a GUI-only environment)"
   exit 1
 }
 setup_env #-q  # from the 'common' script
@@ -282,9 +282,9 @@ else
   LAYER=$1
   RCP_NAME=$2
 fi
-# TODO:
 # Append a $PR = 0.1 to the recipe-name
 dprint "DEBUG = ${DEBUG}, LAYER = ${LAYER}, RCP_NAME = ${RCP_NAME}"
+[[ -d ${LAYER} ]] && die "Layer ${LAYER} already exists"
 
 #-- Validity checks
 layer_metatoken=$(echo "${LAYER}" |cut -d"-" -f1)
@@ -307,17 +307,25 @@ echo "Base Yocto workspace <pfx/build-dir> ::
 ${BUILDDIR}
 "
 
-#-- Create the basic tree
+bitbake-layers create-layer ${LAYER}
+# rm the unnecessary 'recipes-example' dir
+rm -rf ${LAYER}/recipes-example
+
+# Setup the specified recipe dir and files
 RCP_FILES_DIR=${BUILDDIR}/${LAYER}/recipes-${layer_token2}/${RCP_NAME}/files
 dprint "RCP_FILES_DIR = ${RCP_FILES_DIR}"
+
+#-- Create the basic tree
 mkdir -p "${RCP_FILES_DIR}" || {
   echo "Creating recipe dir \"${RCP_FILES_DIR}\" failed, aborting..."
   exit 1
 }
 
-setup_conf_layer_file
+# the 'create-layer' cmd itself sets up the conf/layer.conf file
+#setup_conf_layer_file
 add_to_files_dir
 gen_recipe_file
+bitbake-layers add-layer ${LAYER}
 
 echo
 [ ${WARN} -ne 0 ] && echo "
@@ -325,19 +333,18 @@ echo
 "
 echo "Layer \"${LAYER}\" recipe \"${RCP_NAME}\" setup:
 "
-tree "${BUILDDIR}"/"${LAYER}"/recipes-"${layer_token2}"
+#tree "${BUILDDIR}"/"${LAYER}"/recipes-"${layer_token2}"
+tree "${BUILDDIR}"/"${LAYER}"/
 
 cd "${TOP}"
 
 echo "
 ${name}: Don't forget to:
  a) verify and update the recipe file(s)
- b) update your workspace conf/bblayers.conf file to include the layer that
-    contains this recipe in the build
- c) update your workspace conf/local.conf file to include the recipe in the build
+ b) update your workspace conf/local.conf file to include the recipe in the build
     (typically via a IMAGE_INSTALL:append = \" ${RCP_NAME}\"
   TIP: doing a 'bitbake-layers show-recipes | grep -w xxx' one can check if recipe
   'xxx' is actually installed
- d) rebuild the project with 'bitbake <image-name>' and test
+ c) rebuild the project with 'bitbake <image-name>' and test
  "
 exit 0
