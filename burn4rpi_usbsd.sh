@@ -39,8 +39,8 @@ fi
 echo "Image file (via realpath) is:"
 ls -lh ${IMG}
 
-echo "Enter output disk name (eg. sda, sdb, mmcblk0, ...):
-Tip: lookup the block device name via df or lsblk : "
+echo "Enter output disk name (eg. sdb, sdc, mmcblk0, ...):
+TIP: lookup the block device name via df or lsblk : "
 read ofdisk
 
 lsblk | grep -q "${ofdisk}" || {
@@ -52,7 +52,11 @@ OF_DEV=/dev/${ofdisk}
 cmd="sudo umount ${OF_DEV}* 2>/dev/null; sync"
 eval "${cmd}"
 
-cmd="time sudo dd if=${IMG} of=${OF_DEV} bs=4k"
+# Hey, optimal block size for writing to microSD?
+# see this: https://stackoverflow.com/a/27772496/779269
+# tried the script on the USB sdcard and it says 32 MB!
+BLKSIZE=32M
+cmd="time sudo dd if=${IMG} of=${OF_DEV} bs=${BLKSIZE}"
 echo "
 ${cmd}
 "
