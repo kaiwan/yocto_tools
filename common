@@ -34,7 +34,7 @@ warn()
 	echo >&2 "WARNING:$(basename $0) :: $*"
 }
 
-MSG_CANHAPPEN_BF_BUILD="Note: this can happen if you're running this script before building the target image at least once"
+MSG_CANHAPPEN_BEFORE_BUILD="Note: this can happen if you're running this script before building the target image at least once"
 
 get_json_file()
 {
@@ -75,7 +75,7 @@ in this case, simply switch to your Yocto workspace and run it from there, f.e.,
  \"${BUILDDIR}\"
 does not exist.
 
-Pl setup your Yocto workspace first (i.e.
+Please setup your Yocto workspace first (i.e.
  cd to your Yocto workspace (cd <...>/poky)
  source oe-init-build-env [build-dir]
 ) and then run this tool...
@@ -87,14 +87,22 @@ set -u
   echo "${name}: we expect you to have sourced the oe-init-build-env and be in the Yocto build dir"
   exit 1
 }
+
+# display poky distro version dtl
+echo "=== Poky distro version ==="
+head -n4 ${BUILDDIR}/../meta-poky/conf/distro/poky.conf
+echo
+
 # export common bitbake vars
 
 # Better way - get vars from the JSON testdata file!
 # How? cat tmp/deploy/images/qemuarm64/core-image-base-qemuarm64.testdata.json | jq --raw-output '.<var>'
 
+printf "Working, pl wait...\r"
+#echo -ne "working, pl wait...\r"
 export TMPD=$(basename $(realpath $(bitbake-getvar --value TMPDIR|tail -n1)))
 [[ -z "${TMPD}" ]] && die "couldn't get value of TMPDIR bb variable
-${MSG_CANHAPPEN_BF_BUILD}"
+${MSG_CANHAPPEN_BEFORE_BUILD}"
 #echo "TMPD = ${TMPD}"
 #exit 0
 
@@ -113,7 +121,7 @@ export MACHINE4BH=$(echo "${MACHINE}" |sed -e 's/-/_/')  # BH = BuildHistory
 #echo "MACHINE4BH=${MACHINE4BH}"
 
 [[ -z "${MACHINE4BH}" ]] && die "couldn't get value of bitbake MACHINE variable
-${MSG_CANHAPPEN_BF_BUILD}"
+${MSG_CANHAPPEN_BEFORE_BUILD}"
 
 if [[ -d ${BUILDDIR}/buildhistory ]] ; then
    export TCLIBC=$(bitbake-getvar --value TCLIBC|tail -n1)
