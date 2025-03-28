@@ -32,6 +32,7 @@ source "${PFX}"/common || {
 }
 WARN=0
 
+#-- Populate the meta-<lyr>/recipes-<rcp>/files directory with reqd files
 add_to_files_dir()
 {
 echo
@@ -68,7 +69,7 @@ ls -l "${RCP_FILES_DIR}"/
 echo
 } # end add_to_files_dir()
 
-#-- Generate the meta-<lyr> / recipes-<rcp> / <rcp>.bb recipe file
+#-- Generate the meta-<lyr>/recipes-<rcp>/<rcp>.bb recipe file
 gen_recipe_file()
 {
 echo
@@ -119,7 +120,7 @@ cat << @EOF@ > "${recipe_file}"
 # (c) kaiwanTECH
 # $(date)
 # (Note- this script generates syntax appropriate for honister 3.4 onwards, the syntax is of the form x:y not x_y !
-# For lower versions, you'll have to manually change the syntax).
+# For lower versions, you'll have to manually change the syntax.)
 DESCRIPTION = ""
 
 # Section: 'examples'; replace with appropriate section; f.e.: utils, graphics, apps, ...
@@ -141,7 +142,7 @@ LIC_FILES_CHKSUM = "\\
 	file://\${COREBASE}/meta/files/common-licenses/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302 \\
 	"
 
-# Fill dependencies for this recipe;
+# Fill Runtime DEPENDencieS - the RDEPENDS value - for this recipe's package;
 # (Note- honister 3.4 onwards, the syntax is of the form x:y not x_y !
 # f.e. = "bash dpkg python"
 RDEPENDS:\${PN} = ""
@@ -159,9 +160,9 @@ SRC_URI = "${SRCURI_FILES}
 IMAGE_FEATURES += ""
 
 S = "\${WORKDIR}"
-# FYI, \${S} = \${WORKDIR} = tmp/work/\${PACKAGE_ARCH}-poky-\${TARGET_OS}/\${PN}/\${PV}-\${PR}
+# FYI, \${S} = \${WORKDIR} = \${TMPDIR}/work/\${PACKAGE_ARCH}-\${DISTRO}-\${TARGET_OS}/\${PN}/\${PV}-\${PR}
 #  \${D} = \${WORKDIR}/image
-# f.e
+# f.e, here:
 #  poky/rpi-build/tmp/work/aarch64-poky-linux/myprj/1.0-r0/image/
 #                 [               WORKDIR                 ][image]
 #      [build-dir][             tmp workdir               ]
@@ -181,7 +182,7 @@ do_compile () {
 do_install () {
 	# Specify install commands here; examples below:
 	# (1) create a dir /etc/init.d with:
-	#  install -d -m 0755 \${D}/etc/init.d
+	#  install -d -m 0755 \${D}/\${sysconfdir}/init.d
 	# (2) Tip: to generate a soft link, first cd to the dir and then create it;
 	#  cd ${D}/etc/rc5.d
 	#  ln -s ../init.d/myprg_install.sh S99myprg
@@ -195,7 +196,8 @@ ls -l "${recipe_file}"
 ### 'main'
 which yad >/dev/null || {
   echo "${name}: 'yad' (yet another dialog) util missing, pl install the 'yad' package and retry...
-(yes, as of now at least, this script requires to be run in a GUI-only environment)"
+(yes, as of now at least, this script requires to be run in a GUI-only environment
+ sudo apt install yad )"
   exit 1
 }
 setup_env #-q  # from the 'common' script
@@ -290,7 +292,7 @@ gen_recipe_file
 bitbake-layers add-layer ${LAYER}
 
 echo
-[ ${WARN} -ne 0 ] && echo "
+[ ${WARN} -ne 0 ] && warn "
 *** ${name}: Note: some WARNings were generated ***
 "
 echo "Layer \"${LAYER}\" recipe \"${RCP_NAME}\" setup:
@@ -300,12 +302,12 @@ tree "${BUILDDIR}"/"${LAYER}"/
 
 cd "${TOP}"
 
-echo "
-${name}: Don't forget to:
- a) verify and update the recipe file(s)
+red_highlight "
+${name}: Don't forget to:"
+echo " a) verify and update the recipe file(s)
  b) update your workspace conf/local.conf file to include the recipe in the build
     (typically via a IMAGE_INSTALL:append = \" ${RCP_NAME}\"
-  TIP: doing a 'bitbake-layers show-recipes | grep -w xxx' one can check if recipe
+  TIP: doing a 'bitbake-layers show-recipes | grep -w -A2 xxx' one can check if recipe
   'xxx' is actually installed
  c) rebuild the project with 'bitbake <image-name>' and test
  "
