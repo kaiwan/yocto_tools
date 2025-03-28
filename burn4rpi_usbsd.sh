@@ -16,6 +16,12 @@ name=$(basename $0)
 ofdisk=sda
 interactive=1  # let's just keep this ON for safety...
 
+red_highlight()
+{
+        [[ $# -eq 0 ]] && return
+        echo -e "\e[1m\e[41m$1\e[0m"
+}
+
 [ $# -eq 0 ] && {
   echo "Usage: ${name} [-i] {path-to-rpi-sdimg-file}
  -i : interactive mode"
@@ -54,7 +60,10 @@ eval "${cmd}"
 
 # Hey, optimal block size for writing to microSD?
 # see this: https://stackoverflow.com/a/27772496/779269
-# tried the script on the USB sdcard and it says 32 MB!
+# Tried the script on different media:
+# - on the Honeywell USB hub uSDcard: 32 MB
+# - on the (cheap) USB uSD card reader/writer from robu.in : 11 MB/s for 32 KB output blk size
+# - on my Dell laptop's 1 TB Samsung SSD: 640 MB/s for 8 MB output blk size
 BLKSIZE=32M
 cmd="time sudo dd if=${IMG} of=${OF_DEV} bs=${BLKSIZE}"
 echo "
@@ -62,10 +71,11 @@ ${cmd}
 "
 
 [ ${interactive} -eq 1 ] && {
- read -p "Please CAREFULLY VERIFY that this command is OK to run,
+ red_highlight "Please CAREFULLY VERIFY that this command is OK to run,
 ESPECIALLY the 'of' device !!!
 
 Press [Enter] to continue, ^C to abort ... "
+ read
 }
 
 echo "[+] $(date): writing, pl wait ..."
