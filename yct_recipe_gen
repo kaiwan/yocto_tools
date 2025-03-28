@@ -238,8 +238,11 @@ else
   RCP_NAME=$2
 fi
 # Append a $PR = 0.1 to the recipe-name
-dprint "DEBUG = ${DEBUG}, LAYER = ${LAYER}, RCP_NAME = ${RCP_NAME}"
-[[ -d ${LAYER} ]] && die "Layer ${LAYER} already exists"
+dprint "LAYER = ${LAYER}, RCP_NAME = ${RCP_NAME}"
+
+# TODO : don't abort, proceed using existing layer for new recipe..
+LAYER_EXISTS=0
+[[ -d ${LAYER} ]] && LAYER_EXISTS=1 #&& die "Layer ${LAYER} already exists"
 
 #-- Validity checks
 layer_metatoken=$(echo "${LAYER}" |cut -d"-" -f1)
@@ -262,15 +265,20 @@ echo "Base Yocto workspace <pfx/build-dir> ::
 ${BUILDDIR}
 "
 
-bitbake-layers create-layer ${LAYER}
-# rm the unnecessary 'recipes-example' dir
-rm -rf ${LAYER}/recipes-example
+[[ ${LAYER_EXISTS} -eq 0 ]] && {
+  bitbake-layers create-layer ${LAYER}
+  # rm the unnecessary 'recipes-example' dir
+  rm -rf ${LAYER}/recipes-example
+}
 
 # Setup the specified recipe dir and files
-RCP_FILES_DIR=${BUILDDIR}/${LAYER}/recipes-${layer_token2}/${RCP_NAME}/files
+RCP_FILES_DIR=${BUILDDIR}/${LAYER}/recipes-${layer_token2}/${RCP_NAME}
 dprint "RCP_FILES_DIR = ${RCP_FILES_DIR}"
+[[ -d ${RCP_FILES_DIR} ]] && die "Layer:Recipe :: ${LAYER}:recipe-${layer_token2}/${RCP_NAME} already exists
+Either use another recipe name or create a new layer:recipe"
 
 #-- Create the basic tree
+RCP_FILES_DIR=${RCP_FILES_DIR}/files
 mkdir -p "${RCP_FILES_DIR}" || {
   echo "Creating recipe dir \"${RCP_FILES_DIR}\" failed, aborting..."
   exit 1
