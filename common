@@ -24,14 +24,25 @@ dprint()
 echo "<D> $*"
 }
 
+# red_highlight()
+# Paint message in a (garish) red background, white foreground color :-)
+# ... good for Errors/Warnings/etc
+# F.e.
+#  red_highlight "hey ${you}, that's a mistake!"
+red_highlight()
+{
+        [[ $# -eq 0 ]] && return
+        echo >&2 -e "\e[1m\e[41m$1\e[0m"
+}
+
 die()
 {
-	echo >&2 "FATAL:$(basename $0) :: $*"
+	red_highlight >&2 "FATAL:$(basename $0) :: $*"
 	exit 1
 }
 warn()
 {
-	echo >&2 "WARNING:$(basename $0) :: $*"
+	red_highlight >&2 "WARNING:$(basename $0) :: $*"
 }
 
 MSG_CANHAPPEN_BEFORE_BUILD="Note: this can happen if you're running this script before building the target image at least once"
