@@ -32,51 +32,6 @@ source "${PFX}"/common || {
 }
 WARN=0
 
-#-- Create the conf/layer.conf file
-setup_conf_layer_file()
-{
-local conf_file=${BUILDDIR}/${LAYER}/conf/layer.conf
-dprint "conf_file = ${conf_file}"
-echo
-echo "[+] Create layer's layer.conf file"
-[ -f "${BUILDDIR}"/"${LAYER}"/conf/layer.conf ] && {
-  QP
-  echo " *WARNING* skipping as layer.conf file already exists:"
-  ls -l "${conf_file}"
-  WARN=1
-  return
-}
-
-cd "${BUILDDIR}"/"${LAYER}" || exit 1
-#pwd
-mkdir -p conf
-rm -f conf/layer.conf 2>/dev/null
-touch conf/layer.conf
-
-# TODO : tune layer prio (curr set to 10), compat
-#cat <<- @EOF@ > ${conf_file}
-cat <<- @EOF@ > conf/layer.conf
-	# We have a conf and classes directory, add to BBPATH
-	BBPATH .= ":\${LAYERDIR}"
-
-	# We have recipes-* directories, add to BBFILES
-	BBFILES += "\${LAYERDIR}/recipes-*/*/*.bb \\
-		\${LAYERDIR}/recipes-*/*/*.bbappend"
-
-	BBFILE_COLLECTIONS += "${layer_token2}"
-	BBFILE_PATTERN_${layer_token2} = "^\${LAYERDIR}/"
-	BBFILE_PRIORITY_${layer_token2} = "10"
-
-	LAYER_DEPENDS_${layer_token2} = "core"
-	## TIP: UPDATE with later Yocto release names!
-	# ref: https://wiki.yoctoproject.org/wiki/Releases
-	# FIXME :: UPDATE the release names as required!
-	LAYERSERIES_COMPAT_${layer_token2} = "scarthgap kirkstone honister dunfell hardknott"
-@EOF@
-ls -l conf/layer.conf
-} # end setup_conf_layer_file()
-
-#-- Populate the meta-<lyr> / recipes-<rcp> / files  directory with reqd files
 add_to_files_dir()
 {
 echo
@@ -321,8 +276,7 @@ mkdir -p "${RCP_FILES_DIR}" || {
   exit 1
 }
 
-# the 'create-layer' cmd itself sets up the conf/layer.conf file
-#setup_conf_layer_file
+# the 'bitbake-layers create-layer <...>' cmd itself sets up the conf/layer.conf file
 add_to_files_dir
 gen_recipe_file
 bitbake-layers add-layer ${LAYER}
