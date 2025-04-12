@@ -71,6 +71,10 @@ setup_env()
 {
 unalias ls 2>/dev/null || true
 set +u
+#--
+# Realize that the variable BUILDDIR is a shell var that's set to the bitbake
+# variable ${TOPDIR}; essentially, they're the same thing
+#--
 [ -z "${BUILDDIR}" ] && {
   echo "${name}: we expect you to be running this script from within your Yocto workspace.
 So, you need to do that - source the Yocto environment first; typically:
@@ -144,13 +148,15 @@ if [[ -d ${BUILDDIR}/buildhistory ]] ; then
    export IMAGE_BASENAMES=$(ls -1t buildhistory/images/${MACHINE4BH}/${TCLIBC}/)  # |head -n1)
    [[ -z "${IMAGE_BASENAMES}" ]] && die "couldn't get any image basename(s)"
 else
-	die "requires the 'buildhistory' feature turned on (to get reqd vars)
+	die "requires the 'buildhistory' feature turned on (to get required vars)
 To do so, insert this line into your conf/local.conf:
-INHERIT += \"buildhistory\""
+INHERIT += \"buildhistory\"
+and rebuild (bitbake <target-image>).
+${MSG_CANHAPPEN_BEFORE_BUILD}"
 fi
 
 export IB=""
-echo "BUILDDIR = ${BUILDDIR}
+echo "BUILDDIR or TOPDIR = ${BUILDDIR}
 MACHINE  = ${MACHINE}"
 
 printf "\n%-32s %50s\n" "IMAGE-BASENAME" "TESTDATA-JSON file"

@@ -214,7 +214,7 @@ MACHINE=$(${PFX}/showvars2 MACHINE |grep "^MACHINE" |cut -d: -f2|tail -n1)
 export BUILDDIR
 echo "
 +++ NOTE Carefully Please +++
-Your current Yocto 'build' dir (\$BUILDDIR) is
+Your current Yocto 'build' dir (\$BUILDDIR or \$TOPDIR) is
 \"${BUILDDIR}\"
 
 This implies that the layer/recipe dir tree and files will be created within
