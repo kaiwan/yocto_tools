@@ -55,6 +55,7 @@ get_json_file()
     return 1
   }
 
+  export TESTDATA_JSON=""
   for f in $(ls -1t ${BUILDDIR}/${TMPD}/deploy/images/${MACHINE}/${IB}-${MACHINE}*.testdata.json)
   do
     [[ -L $f ]] && {
