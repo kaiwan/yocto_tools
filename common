@@ -66,6 +66,42 @@ get_json_file()
   return 0
 }
 
+
+# params:
+#  $1 : Yocto ver #
+ver_lt_53()
+{
+    local ver="${1#yocto-}"   # strip optional "yocto-" prefix
+    # returns 0 (true) if ver < 5.3
+    [ "$(printf '%s\n5.3\n' "$ver" | sort -V | head -n1)" = "$ver" ] && [ "$ver" != "5.3" ]
+}
+
+# TODO : requires regular updating !!!
+# params:
+#  $1 : Yocto release name
+yocto_name_to_ver()
+{
+    local name
+    [[ $# -ne 1 ]] && return
+    name="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"  # case-insensitive
+    case "$name" in
+        wrynose)    echo "6.0"  ;;   # LTS, 04/2026
+        whinlatter) echo "5.3"  ;;   # 12/2025
+        walnascar)  echo "5.2"  ;;   # 04/2025
+        styhead)    echo "5.1"  ;;   # 10/2024
+        scarthgap)  echo "5.0"  ;;   # LTS, 04/2024
+        nanbield)   echo "4.3"  ;;   # 11/2023
+        mickledore) echo "4.2"  ;;   # 05/2023
+        langdale)   echo "4.1"  ;;   # 10/2022
+        kirkstone)  echo "4.0"  ;;   # LTS, 05/2022
+        honister)   echo "3.4"  ;;
+        hardknott)  echo "3.3"  ;;
+        gatesgarth) echo "3.2"  ;;
+        dunfell)    echo "3.1"  ;;   # LTS
+        *)          echo "unknown"; return 1 ;;
+    esac
+}
+
 # Params:
 # $1 : [-q] : optional; if passed, run in quiet mode
 setup_env()
@@ -104,10 +140,31 @@ set -u
   exit 1
 }
 
+#---------- IMP !!!
+# From 5.3 onwards, Poky is NOT the default distro!
+REL=$(bitbake-getvar --value LAYERSERIES_CORENAMES)
+VER=$(yocto_name_to_ver ${REL})
+#VER=$(git -C $(find .. -maxdepth 2 -type d -name openembedded-core) describe --tags)
+
+echo "Yocto ${VER} ${REL}"
+export OLDER_VER=0  # Assume Yocto ver >= 5.3 to begin with...
+if ver_lt_53 "${VER}"; then
+    OLDER_VER=1
+    echo -n "[ Older release, prior to 5.3 whinlatter, expect presence of ${BUILDDIR}/../../poky ] "
+    [[ ! -d ${BUILDDIR}/../../poky ]] && die "failed to detect 'poky' dir, aborting" || \
+       echo " [OK]"
+else
+    echo "[ Newer release, 5.3 whinlatter or later ] "
+fi
+
+#exit 0
+
 # display poky distro version dtl
-echo "=== Poky distro version ==="
-head -n4 ${BUILDDIR}/../meta-poky/conf/distro/poky.conf
-echo
+[[ ${OLDER_VER} -eq 1 ]] && {
+ echo "=== Poky distro version ==="
+ head -n4 ${BUILDDIR}/../meta-poky/conf/distro/poky.conf
+ echo
+}
 
 # export common bitbake vars
 
