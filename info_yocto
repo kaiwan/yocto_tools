@@ -59,7 +59,7 @@ echo -n " Total size actually installed packages:${PKGSIZE_KB} KB"
 	local SZMB=$(bc <<< "scale=2; (${PKGSIZE_KB}/1024.0)")
 	echo " (${SZMB} MB)"
 } || echo
-echo "(Details on installed packages:
+echo "(Lookup more details on installed packages here:
  ${BUILDDIR}/buildhistory/images/${MACHINE4BH}/${TCLIBC}/${IB}/
   installed-package-info.txt  installed-package-names.txt  installed-package-sizes.txt  installed-packages.txt )"
 
@@ -150,7 +150,7 @@ done
 
 layers_and_recipes()
 {
-bitbake-layers show-layers | grep "meta-" > ${TMPF}_bblyr
+bitbake-layers show-layers | grep "meta-" > ${TMPF}_bblyr || true
 ORIG_IFS=${IFS}
 
 LAYER_RECIPE_TITLE_HEAD="=== All LAYERS (meta-foo) and RECIPES (recipe-bar)"
