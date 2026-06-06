@@ -26,7 +26,7 @@ Usage: ${name} [option] ; where option can be:
  -h   : show this Help screen
 
 In any case, this utility will display:
-- minimal info on this system (BUILDDIR, MACHINE, IMAGE_BASENAME, ...)
+- minimal info on this system (TOPDIR, MACHINE, IMAGE_BASENAME, ...)
 - some DISTRO details
 - package info (# of pkg, total size taken up)
 @EOF@
@@ -119,6 +119,14 @@ printf "[%d]\n" ${layerprio}
 #printf "    %s:               [%d]\n" $(basename ${layerdir}) ${layerprio}
 #---
 
+#--- TODO
+# NOT OKAY!
+# the recipe name is the recipe filename excluding the ver details...
+# f.e. the recipe filename is jack_1.9.22.bb, so the recipe-name is 'jack'
+#      the busybox package: the recipe filename is busybox_1.36.1.bb, so the
+#        recipe-name is 'busybox'
+# That's it!
+#---
 local recipedir recdir
 for recipedir in $(find ${layerdir} -type d -name "recipes-*" 2>/dev/null)
 do
