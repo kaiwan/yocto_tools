@@ -111,6 +111,7 @@ local slen=${#layerdir_base}
 printf "    %s:" $(basename ${layerdir})
 local numspc=3
 [[ ${slen} -lt 42 ]] && numspc=$((42-slen))
+[[ ${SHOW_EXTENDED_LAYERREC_INFO} -eq 1 ]] && numspc=$((numspc+64))
 for i in $(seq 1 ${numspc})
 do
 	echo -n " "
@@ -126,31 +127,33 @@ printf "[%d]\n" ${layerprio}
 #      the busybox package: the recipe filename is busybox_1.36.1.bb, so the
 #        recipe-name is 'busybox'
 # That's it!
+# Update: Ok, for -x we now show all the recipe files (*.bb*) under recipedir
 #---
 local recipedir recdir
 for recipedir in $(find ${layerdir} -type d -name "recipes-*" 2>/dev/null)
 do
 	# layer name
-	echo "        $(basename ${recipedir})"
-	[[ ${SHOW_EXTENDED_LAYERREC_INFO} -ne 1 ]] && continue  # -x passed?
+	#echo -n "        $(basename ${recipedir}) "
+	printf "%30s " $(basename ${recipedir})
+	[[ ${SHOW_EXTENDED_LAYERREC_INFO} -ne 1 ]] && {
+	  echo
+	  continue  # -x passed?
+	}
+	# yes, -x passed, show details for the recipe
 	local i=0
-	for recdir in $(find ${recipedir} -type d 2>/dev/null)
+	printf "    [ %30s ]\n" ${recipedir}
+	#for recdir in $(find ${recipedir} -type d 2>/dev/null)
+	for recipe in $(find ${recipedir} -type f -name "*.bb*" 2>/dev/null)
 	do
-		#echo ">>>>>>>>> ${recdir}"
-		[[ $i -eq 0 ]] && { # skip the first one
-			let i=i+1
-			continue
-		}
-		[[ "$(basename ${recdir})" = "files" ]] && continue
-		# recipe name
-		echo "            $(basename ${recdir})"
+		echo "                    $(basename ${recipe})"
 	done
 done
 }
 
 layers_and_recipes()
 {
-bitbake-layers show-layers | grep "meta-" > ${TMPF}_bblyr || true
+#bitbake-layers show-layers | grep "meta-" > ${TMPF}_bblyr || true
+bitbake-layers show-layers > ${TMPF}_bblyr || true
 ORIG_IFS=${IFS}
 
 LAYER_RECIPE_TITLE_HEAD="=== All LAYERS (meta-foo) and RECIPES (recipe-bar)"
@@ -163,16 +166,20 @@ echo "${LAYER_RECIPE_TITLE}"
 
 # First show the (default) meta/ dir's layers[+recipes]
 # FIXME: hard-coding prio as 5
-recipes4layer ${BUILDDIR}/../meta 5
+#recipes4layer ${BUILDDIR}/../meta 5
 
 local layerdir layerprio
 export IFS=$'\n'
+local regex='^[0-9]+$'
 for rec in $(cat ${TMPF}_bblyr)
 do
 	layerdir=$(grep "${rec}" ${TMPF}_bblyr |awk '{print $2}') || true
 	layerprio=$(grep "${rec}" ${TMPF}_bblyr |awk '{print $3}') || true
 	#echo "rec=$rec, layerdir = $layerdir, layerprio=$layerprio"
-	[[ -z "${layerdir}" ]] && continue
+	if ! [[ ${layerprio} =~ ${regex} ]] ; then
+	  continue  # layerprio is not a number
+	fi
+	#[[ -z "${layerdir}" ]] && continue
 	recipes4layer ${layerdir} ${layerprio}
 done
 IFS=${ORIG_IFS}
