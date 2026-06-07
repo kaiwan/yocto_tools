@@ -14,9 +14,16 @@ setup_env #-q
 #echo "OLDER_VER = ${OLDER_VER}"
 SPEC=../meta*/recipes*/images/*.bb
 [[ ${OLDER_VER} -eq 0 ]] && SPEC=${UPSTREAM_LAYERS}/openembedded-core/meta*/recipes*/images/*.bb
+
+echo
+printf "%81s\n" "IMAGE RECIPE Directory"
+PREV=""
+for IMG in $(ls ${SPEC})
 do
-	printf "%-36s: %s\n" $(basename ${IMG}) $(dirname ${IMG})
-	#echo "$(basename ${IMG})"
+	IMGDIR=$(dirname ${IMG})
+	printf "%-40s " $(basename ${IMG}) 
+	[[ "${IMGDIR}" = "${PREV}" ]] && printf " \n" || printf ": %s\n" ${IMGDIR}
+	PREV=${IMGDIR}
 done
 
 exit 0
