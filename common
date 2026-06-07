@@ -102,6 +102,40 @@ yocto_name_to_ver()
     esac
 }
 
+#--- 'New' approach, for Yocto ver >= 5.3: Layers location:
+# Ok, we'll begin by assuming that the *upstream* layers / repos actually
+# - bitbake, meta-yocto, openembedded-core, yocto-docs - are in
+# ${BUILDDIR}/../upstream_layers
+# If not, ask the user to set an env var to point to the location.
+# Ditto for the project layers (in ${BUILDDIR}/../myprj_layers) ...
+#
+# NOTE: not really happy/convinced with this approach, it leaves a lot to be
+# desired; but will go with it for now... (famous last words?)
+locate_upstream_and_prj_layerdirs()
+{
+ set +u
+ export UPSTREAM_LAYERS PRJ_LAYERS
+ #--- for upstream layers
+ if [[ -z ${UPSTREAM_LAYERS} ]] ; then   # unset
+    if [[ -d ${BUILDDIR}/../upstream_layers ]] ; then
+       UPSTREAM_LAYERS=${BUILDDIR}/../upstream_layers
+    else
+       die "We need to know the location of the Yocto prj Upstream layers in order to continue;
+please set and export it in the UPSTREAM_LAYERS environment variable and then rerun this script, thanks"
+    fi
+ fi
+ #--- for project layers
+ if [[ -z ${PRJ_LAYERS} ]] ; then   # unset
+    if [[ -d ${BUILDDIR}/../myprj_layers ]] ; then
+       PRJ_LAYERS=${BUILDDIR}/../myprj_layers
+    else
+       die "We need to know the location of your project's layers in order to continue;
+please set and export it in the PRJ_LAYERS environment variable and then rerun this script, thanks"
+    fi
+ fi
+ set -u
+}
+
 # Params:
 # $1 : [-q] : optional; if passed, run in quiet mode
 setup_env()
@@ -155,6 +189,9 @@ if ver_lt_53 "${VER}"; then
        echo " [OK]"
 else
     echo "[ Newer release, 5.3 whinlatter or later ] "
+    locate_upstream_and_prj_layerdirs
+    echo "[ Yocto project Upstream layers location = ${UPSTREAM_LAYERS} ]"
+    echo "[ Current project layers location        = ${PRJ_LAYERS} ]"
 fi
 
 #exit 0
