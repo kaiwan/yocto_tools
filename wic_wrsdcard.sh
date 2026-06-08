@@ -82,8 +82,13 @@ rm -f ${olderfiles}
 ### 'main' here
 
 which wic >/dev/null 2>&1 || {
-  echo "${name}: must run this from a sourced bitbake env
-(must cd to your Yocto workspace and run 'source oe-init-build-env [build-dir]' first"
+  echo "${name}: wic not found... 
+Tip: needs to be built first time?
+Do so with:
+  bitbake wic-tools
+
+(If built, then you must run this script from a sourced bitbake env
+ must cd to your Yocto workspace and run 'source oe-init-build-env [build-dir]' first)"
   exit 1
 }
 setup_env #-q
