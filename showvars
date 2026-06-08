@@ -9,7 +9,6 @@ PFX=$(dirname "$(which "$0")")    # dir in which the common code and tools resid
 source "${PFX}"/common || {
   echo "${name}: could not source 'common' script, aborting..." ; exit 1
 }
-setup_env -q
 
 disp_bbvars()
 {
@@ -47,6 +46,7 @@ bbexample:                      ### <--- the recipe name here's 'bbexample'  ###
 "
 	exit 1
 }
+setup_env -q
 RECIPE="$1"
 
 echo "${name}: scanning ..."
