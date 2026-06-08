@@ -250,6 +250,11 @@ and rebuild (bitbake <target-image>).
 ${MSG_CANHAPPEN_BEFORE_BUILD}"
 fi
 
+export DISTRO_VERSION=$(bitbake-getvar --value DISTRO_VERSION)
+#export MAINTAINER=$(bitbake-getvar --value MAINTAINER)
+#export OS=$(bitbake-getvar --value OS)
+export TMPDIR=$(bitbake-getvar --value TMPDIR)
+
 export IB=""
 echo "BUILDDIR or TOPDIR = ${BUILDDIR}
 MACHINE  = ${MACHINE}"
@@ -273,7 +278,14 @@ do
 	set -e
   fi
   #echo
+
+  # The actual target root filesystem itself is here:
+  # ${TMPDIR}/work/${MACHINE}-${MAINTAINER}-${OS}/${IMAGE_BASENAME}/${DISTRO_VERSION}/rootfs
+  ROOTFS=${TMPDIR}/work/${MACHINE}-oe-linux/${IB}/*/rootfs
+  echo -n " Root filesystem location         ${TMPDIR}/work/${MACHINE}-oe-linux/${IB}/*/rootfs"
+  ls ${ROOTFS} >/dev/null 2>&1 || echo "  -not found-" && echo
 done
+
 }
 
 #-------------- r u n c m d -------------------------------------------
