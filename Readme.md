@@ -1,21 +1,19 @@
-# **A small, simple and useful tool collection for Yocto**
+# **A small, simple and hopefully useful tool collection for Yocto**
 
 **_NOTE_**
 
-0. **IMPORTANT** :
-Most of these scripts work well with Yocto ver 5.2 and below... with the directory structure changing from 5.3 (Whinlatter), and Poky not being the default distro, I need to update the scripts...
-
-2. We assume that these scripts will be run from within your Yocto
+1. We assume that these scripts will be run from within your Yocto
 workspace; in effect, from the `TOPDIR` or `BUILDDIR` directory, after you've correctly sourced the `oe-init-build-env` script.
 
-3. Most of these helper tools require that:
+2. Most of these helper tools require that:
 the '*buildhistory*' feature turned on (to get required bitbake vars).
 To do so, insert this line into your `conf/local.conf` file:
 
     INHERIT += "buildhistory"
 
-4. The system has been built via bitbake (at least once)
-5. Here's the way the scripts work in the presence of multiple items where, typically, only one is expected; for example, the MACHINE type, or target image or libc type. They will pick up just one - the latest one currently in use.
+3. The system has been built via bitbake (at least once)
+
+4. Here's the way the scripts work in the presence of multiple items where, typically, only one is expected; for example, the MACHINE type, or target image or libc type. They will pick up just one - the latest one currently in use.
 
 
 ***The tools/helper scripts currently available are:***
