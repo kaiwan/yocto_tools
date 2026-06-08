@@ -147,6 +147,8 @@ please set and export it in the PRJ_LAYERS environment variable and then rerun t
 # $1 : [-q] : optional; if passed, run in quiet mode
 setup_env()
 {
+echo "
+<<<----------------- commom:setup_env() begin ----------------->>>"
 unalias ls 2>/dev/null || true
 set +u
 #--
@@ -200,8 +202,6 @@ else
     echo "[ Yocto project Upstream layers location = ${UPSTREAM_LAYERS} ]"
     echo "[ Current project layers location        = ${PRJ_LAYERS} ]"
 fi
-
-#exit 0
 
 # display poky distro version dtl
 [[ ${OLDER_VER} -eq 1 ]] && {
@@ -266,9 +266,9 @@ export IB=""
 echo "BUILDDIR or TOPDIR = ${BUILDDIR}
 MACHINE  = ${MACHINE}"
 
-printf "\n%-32s %50s\n" "IMAGE-BASENAME" "TESTDATA-JSON file"
+[[ $# -ge 1 && "$1" = "-q" ]] || printf "\n%-32s %50s\n" "IMAGE-BASENAME" "TESTDATA-JSON file"
 for IB in ${IMAGE_BASENAMES}
-do
+ do
   # pathname written into the TESTDATA_JSON exported var
   get_json_file || {
 	#warn "couldn't get the JSON testdata file for this base image (requires that the system's built at least once and that the build metadata's present under tmp/deploy/images/)"
@@ -279,6 +279,8 @@ do
   set +e
   if [[ $# -ge 1 && "$1" = "-q" ]] ; then
 	set -e
+	echo "<<<-----------------  commom:setup_env() end  ----------------->>>
+"
 	return
   else
 	printf "%-32s  %50s\n" ${IB} ${TESTDATA_JSON}
@@ -289,10 +291,11 @@ do
   # The actual target root filesystem itself is here:
   # ${TMPDIR}/work/${MACHINE}-${MAINTAINER}-${OS}/${IMAGE_BASENAME}/${DISTRO_VERSION}/rootfs
   ROOTFS=${TMPDIR}/work/${MACHINE}-oe-linux/${IB}/*/rootfs
-  echo -n " Root filesystem location         ${TMPDIR}/work/${MACHINE}-oe-linux/${IB}/*/rootfs"
+  echo -n " Root filesystem location          ${TMPDIR}/work/${MACHINE}-oe-linux/${IB}/*/rootfs"
   ls ${ROOTFS} >/dev/null 2>&1 || echo "  -not found-" && echo
 done
-
+echo "<<<-----------------  commom:setup_env() end  ----------------->>>
+"
 }
 
 #-------------- r u n c m d -------------------------------------------
