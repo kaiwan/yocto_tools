@@ -24,7 +24,7 @@ setup_env #-q
 EXT_IMG=$(ls -1t ${TMPD}/deploy/images/${MACHINE}/${IB}-${MACHINE}.*ext[34]* |head -n1 || die "couldn't fetch any ext[34] format image file")
 #echo "EXT_IMG = $EXT_IMG"
 EXT_IMG=$(realpath ${EXT_IMG})
-FINALE_IMG=${EXT_IMG}
+FINAL_IMG=${EXT_IMG}
 file ${EXT_IMG} |grep "Zstandard compressed data" >/dev/null && {
   echo "The rootfs is a ZST Zstandard compressed file, extracting now..."
   zstd -d ${EXT_IMG} || die "couldn't extract"
@@ -41,5 +41,6 @@ sudo mkdir -p ${MOUNT_POINT} 2>/dev/null
 sudo umount ${MOUNT_POINT}/ 2>/dev/null || true
 sudo mount -o loop ${FINAL_IMG} ${MOUNT_POINT}/ || die "loop mount failed" && true
 df -h |grep "${MOUNT_POINT}"
-echo "Successfully mounted; *** DON'T forget to umount it when done !!! ***"
+echo "
+Successfully mounted; *** DON'T forget to umount it when done !!! ***"
 exit 0
