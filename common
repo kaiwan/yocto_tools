@@ -217,6 +217,8 @@ fi
 
 printf "Working, pl wait...\r"
 #echo -ne "working, pl wait...\r"
+# 'TMPDIR' seems to be another env var! evals to something like '/tmp/user/1000'
+# on my Ubuntu 24.04 box; so let's use another var name
 export TMPD=$(basename $(realpath $(bitbake-getvar --value TMPDIR|tail -n1)))
 [[ -z "${TMPD}" ]] && die "couldn't get value of TMPDIR bb variable
 ${MSG_CANHAPPEN_BEFORE_BUILD}"
@@ -258,10 +260,6 @@ ${MSG_CANHAPPEN_BEFORE_BUILD}"
 fi
 
 export DISTRO_VERSION=$(bitbake-getvar --value DISTRO_VERSION)
-#export MAINTAINER=$(bitbake-getvar --value MAINTAINER)
-#export OS=$(bitbake-getvar --value OS)
-export TMPDIR=$(bitbake-getvar --value TMPDIR)
-
 export IB=""
 echo "BUILDDIR or TOPDIR = ${BUILDDIR}
 MACHINE  = ${MACHINE}"
@@ -290,9 +288,14 @@ for IB in ${IMAGE_BASENAMES}
 
   # The actual target root filesystem itself is here:
   # ${TMPDIR}/work/${MACHINE}-${MAINTAINER}-${OS}/${IMAGE_BASENAME}/${DISTRO_VERSION}/rootfs
-  ROOTFS=${TMPDIR}/work/${MACHINE}-oe-linux/${IB}/*/rootfs
-  echo -n " Root filesystem location          ${TMPDIR}/work/${MACHINE}-oe-linux/${IB}/*/rootfs"
-  ls ${ROOTFS} >/dev/null 2>&1 || echo "  -not found-" && echo
+  local rootfs_pv_pr=$(ls ./${TMPD}/work/${MACHINE}-oe-linux/${IB})
+  #ROOTFS=./${TMPD}/work/${MACHINE}-oe-linux/${IB}/*/rootfs
+  ROOTFS=${TMPD}/work/${MACHINE}-oe-linux/${IB}/${rootfs_pv_pr}/rootfs
+  ls ${ROOTFS} >/dev/null 2>&1 && {
+    #echo -n " Root filesystem location          ${TMPDIR}/work/${MACHINE}-oe-linux/${IB}/*/rootfs"
+    echo -n " Root filesystem location          ${ROOTFS}"
+    ls ${ROOTFS} >/dev/null 2>&1 || echo "  -not found-" && echo
+  }
 done
 echo "<<<-----------------  commom:setup_env() end  ----------------->>>
 "
