@@ -28,7 +28,7 @@ FINAL_IMG=${EXT_IMG}
 file ${EXT_IMG} |grep "Zstandard compressed data" >/dev/null && {
   echo "The rootfs is a ZST Zstandard compressed file, extracting now..."
   zstd -d ${EXT_IMG} || die "couldn't extract"
-  FINAL_IMG=$(ls -1t ${TMPD}/deploy/images/${MACHINE}/${IB}-${MACHINE}.*ext[34])
+  FINAL_IMG=$(ls -t ${TMPD}/deploy/images/${MACHINE}/${IB}-${MACHINE}.*ext[34] |head -n1)
   ls -l ${FINAL_IMG}
 }
 
